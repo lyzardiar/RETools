@@ -22,6 +22,8 @@ namespace PublicTools.View
 
         public override bool work(List<string> paths, bool isOverlap)
         {
+            foreach (string path in paths)
+                updateDescription(path);
             return true;
         }
 
@@ -61,7 +63,7 @@ namespace PublicTools.View
 
         public void updateDescription(string msg)
         {
-            
+            Global.stateLabel.Text += msg + "\n";
         }
     }
 }

@@ -8,30 +8,6 @@ namespace PublicTools.View
 {
     public class BaseView
     {
-        List<string> iterDir(String dirpath, List<string> inList = null)
-        {
-            List<string> ret = inList;
-            if (ret == null)
-                ret = new List<string>();
-
-            if (System.IO.Directory.Exists(dirpath))
-            {
-                System.IO.Directory.GetFiles(dirpath);
-                ret.AddRange(System.IO.Directory.EnumerateFiles(dirpath));
-
-                foreach (String path in System.IO.Directory.EnumerateDirectories(dirpath))
-                {
-                    iterDir(path, ret);
-                }
-            }
-            else
-            {
-                ret.Add(dirpath);
-            }
-
-            return ret;
-        }
-
         public void workWithFileList(System.Array arr, bool isOverlap = true)
         {
             List<string> paths = new List<string>();
@@ -40,7 +16,7 @@ namespace PublicTools.View
                 // 文件夹
                 if (System.IO.Directory.Exists(path))
                 {
-                    paths.AddRange(iterDir(path));
+                    paths.AddRange(FileHelper.walkDir(path));
                 }
                 else if (System.IO.File.Exists(path))
                 {

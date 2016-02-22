@@ -1,7 +1,7 @@
 ﻿<Window x:Class="PublicTools.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="XGame 工具集" Height="388.868" Width="626.541">
+        Title="XGame 工具集" Height="600" Width="625" MaxWidth="625" MaxHeight="600" MinWidth="625" MinHeight="600">
     <Grid>
         <TabControl x:Name="tabControl" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Height="359" Width="619">
             <TabItem Header="发布">
@@ -22,5 +22,6 @@
                 </Grid>
             </TabItem>
         </TabControl>
+        <TextBox x:Name="stateLabel" Text="Label" HorizontalAlignment="Left" Margin="0,359,0,0" VerticalAlignment="Top" Width="617" Height="211" Background="Black" FontFamily="Monaco" Foreground="#FF0CFF00" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True"/>
     </Grid>
 </Window>

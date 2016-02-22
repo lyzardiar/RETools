@@ -25,6 +25,10 @@ namespace PublicTools
         public MainWindow()
         {
             InitializeComponent();
+
+            Global.stateLabel = stateLabel;
+            stateLabel.Text = "";
+            stateLabel.IsReadOnly = true;
         }
 
         private void PNGDropContent_Drop(object sender, DragEventArgs e)
