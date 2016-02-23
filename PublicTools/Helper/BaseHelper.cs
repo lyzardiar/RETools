@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PublicTools.View
+namespace PublicTools.Helper
 {
-    public class BaseView
+    public class BaseHelper
     {
-        public void workWithFileList(System.Array arr, bool isOverlap = true)
+        public virtual void workWithFileList(System.Array arr, bool isOverlap = true)
         {
             List<string> paths = new List<string>();
             foreach (String path in arr)

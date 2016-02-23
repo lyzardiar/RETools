@@ -21,9 +21,11 @@ def iter_find_files(path, fnexp):
         for filename in fnmatch.filter(files, fnexp):
             yield os.path.join(root, filename)
 
-tpDir = "E:/Workspace/Mobilephone_DDT/trunk/Client/Develop/Tools/android/etc/"
-tpPath = tpDir + "etcpack.exe "
-gzipBin = tpDir + "gzip.exe "
+            
+projectdir = os.path.dirname(os.path.realpath(__file__))
+tpDir = projectdir
+tpPath = os.path.join(projectdir, "etcpack.exe ")
+gzipBin = os.path.join(projectdir, "gzip.exe ")  
 
 iosPngCmd = """%s %%s %%s -c etc1 -as """ % (tpPath)
 iosJpgCmd = """%s %%s %%s -c etc1  """ % (tpPath)
@@ -44,6 +46,8 @@ def work_file(filename):
     filepath = os.path.realpath(filename)
     filedir = os.path.dirname(filepath)
 
+    sys.stdout.flush() 
+    
     for filtername in filters:
         if filepath.find(filtername) != -1:
             PassCnt = PassCnt + 1
@@ -201,34 +205,60 @@ def work_async(tardir):
         count = count + 1
         work_file(info[2])
         print("pack[%d/%d]: %s" % (count, length, info[2]))
-    
-    # while not can_quiet:
-        # t = None
-        # for i in range(0, trdcount): 
-            # if count >= length:
-                # can_quiet = True
-                # break
-            # info = files[count]
-            # isPng = (info[1] == 0)
-            # imgfilename = info[2]
 
-            # t = threading.Thread(target=work_file,args=(imgfilename,))
-            # # t.setDaemon(True)
-            # t.start()
-            # count = count + 1
-        # t.join()
-        # print("pack[%d/%d]: %s" % (count, length, imgfilename))
     pass
     
+def work():
+    isShowFilesCount = True
+    
+    global tpDir, tpPath, gzipBin, iosPngCmd, iosJpgCmd, isUseGzip, filters
+    
+    isToolDirChange = False
+    
+    targetFiles = []
+    
+    opts, args = getopt.getopt(sys.argv[1:], "d:t:g:f:")
+    for op, value in opts:
+        if op == "-d":
+            targetFiles.append(value)
+        elif op == "-t":
+            isToolDirChange = True
+            tpDir = value
+        elif op == "-g":
+            if value == 'true':
+                isUseGzip = True
+            else:
+                isUseGzip = False
+        elif op == "-f":
+            filters.append(value)
+    
+    if isToolDirChange:    
+        tpPath = os.path.join(tpDir, "etcpack.exe ")
+        gzipBin = os.path.join(tpDir, "gzip.exe ")
 
+        iosPngCmd = """%s %%s %%s -c etc1 -as """ % (tpPath)
+        iosJpgCmd = """%s %%s %%s -c etc1  """ % (tpPath)
+    
+    if len(targetFiles) > 0:
+        for i in range(0, len(targetFiles)):
+            filepath = targetFiles[i]
+            if os.path.isdir(filepath):
+                work_async(filepath)
+            else:
+                work_file(filepath)
+    else:    
+        if len(sys.argv) > 1:
+            inputFile = sys.argv[1]
+            for i in range(1, len(sys.argv)):
+                filepath = sys.argv[i]
+                if os.path.isdir(filepath):
+                    work_async(filepath)
+                else:
+                    work_file(filepath)
+        else:
+            curdir = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Engine\proj.android\assets\res"
+            work_async(curdir)
+    print( "Complete: Gzip:%d, Mng:%d, Pkm:%d, Pass:%d ==  %d" % ( GzipCnt, MngCnt, PkmCnt, PassCnt, GzipCnt + MngCnt + PkmCnt + PassCnt ) )    
+    
 if __name__ == '__main__': 
-    if len(sys.argv) > 1:
-        inputFile = sys.argv[1]
-        for i in range(1, len(sys.argv)):
-            work_file(sys.argv[i])
-        # os.system("pause")
-    else:
-        isShowFilesCount = True
-        curdir = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Engine\proj.android\assets\res"
-        work_async(curdir)
-        print( "Complete: Gzip:%d, Mng:%d, Pkm:%d, Pass:%d ==  %d" % ( GzipCnt, MngCnt, PkmCnt, PassCnt, GzipCnt + MngCnt + PkmCnt + PassCnt ) )
+    work()

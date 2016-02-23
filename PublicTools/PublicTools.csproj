@@ -75,8 +75,8 @@
     </Page>
     <Compile Include="Global\FileHelper.cs" />
     <Compile Include="Global\Global.cs" />
-    <Compile Include="View\BaseView.cs" />
-    <Compile Include="View\PNGEncodeView.cs" />
+    <Compile Include="Helper\BaseHelper.cs" />
+    <Compile Include="Helper\PNGEncodeHelper.cs" />
     <Compile Include="Xaml\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>

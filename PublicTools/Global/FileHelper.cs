@@ -14,7 +14,7 @@ namespace PublicTools
         /// <param name="dirpath"></param>
         /// <param name="inList"></param>
         /// <returns>List<string></returns>
-        public static List<string> walkDir(String dirpath, List<string> inList = null)
+        public static List<string> walkDir(string dirpath, List<string> inList = null)
         {
             List<string> ret = inList;
             if (ret == null)
@@ -25,7 +25,7 @@ namespace PublicTools
                 System.IO.Directory.GetFiles(dirpath);
                 ret.AddRange(System.IO.Directory.EnumerateFiles(dirpath));
 
-                foreach (String path in System.IO.Directory.EnumerateDirectories(dirpath))
+                foreach (string path in System.IO.Directory.EnumerateDirectories(dirpath))
                 {
                     walkDir(path, ret);
                 }
