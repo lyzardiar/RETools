@@ -46,6 +46,7 @@ namespace PublicTools
             bool isPVRTC4Encode = PVRTC4EncodeTag.IsChecked.Value;
 
             PNGEncodeHelper.Instance.isFast = pngIsFast.IsChecked.Value;
+            PNGEncodeHelper.Instance.isConvertMP = pngIsConvertMP.IsChecked.Value;
 
             if (isETCEncode)
             {
@@ -106,6 +107,11 @@ namespace PublicTools
         private void clearBtn_Click(object sender, RoutedEventArgs e)
         {
             stateLabel.Text = "";
+        }
+
+        private void GenDiffButton_Click(object sender, RoutedEventArgs e)
+        {
+            SVNHelper.getDiff(0);
         }
     }
 }

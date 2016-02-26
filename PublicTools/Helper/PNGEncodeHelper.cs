@@ -29,6 +29,7 @@ namespace PublicTools.Helper
         };
         public ConvertType convertType = ConvertType.ETC;
         public bool isFast { get; set; }
+        public bool isConvertMP { get; set; }
 
         string getToolPath(ConvertType type)
         {
@@ -71,6 +72,11 @@ namespace PublicTools.Helper
             if (!isFast)
             {
                 param += " -s slow ";
+            }
+
+            if (isConvertMP)
+            {
+                param += " -p ";
             }
 
             executeFilePath = @"python.exe";

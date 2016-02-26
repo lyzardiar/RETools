@@ -42,6 +42,13 @@
                         <RadioButton x:Name="PVRTC4EncodeTag" Content="PVRTC4" Margin="5,0,0,0"/>
                     </StackPanel>
                     <CheckBox x:Name="pngIsFast" Content="Fast" HorizontalAlignment="Left" Margin="38,34,0,0" VerticalAlignment="Top" IsChecked="True"/>
+                    <CheckBox x:Name="pngIsConvertMP" Content="MP" HorizontalAlignment="Left" Margin="38,55,0,0" VerticalAlignment="Top"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="SVN">
+                <Grid Background="#FFE5E5E5">
+                    <Button x:Name="GenDiffButton" Content="Diff" HorizontalAlignment="Left" Margin="215,119,0,0" VerticalAlignment="Top" Width="75" Click="GenDiffButton_Click"/>
 
                 </Grid>
             </TabItem>
