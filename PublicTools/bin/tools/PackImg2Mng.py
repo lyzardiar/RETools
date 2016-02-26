@@ -36,6 +36,7 @@ iosJpgCmd = """%s %%s %%s -c etc1  """ % (tpPath)
 
 isUseGzip = True
 isSaveTransFile = False
+isConvertMP = False
 
 RGBMode = "ETC"
 
@@ -205,8 +206,9 @@ def work_async(tardir):
         elif filename.find(".mp3") != -1:
             pass
         elif filename.find(".mp") != -1:
-            print("Convert mp:", filename)
-            os.system("%s %s" % (mpBin, filename))
+            if isConvertMP:
+                print("Convert mp:", filename)
+                os.system("%s %s" % (mpBin, filename))
     
     trdcount = 10
     
@@ -224,7 +226,7 @@ def work_async(tardir):
 def work():
     isShowFilesCount = True
     
-    global tpDir, tpPath, gzipBin, iosPngCmd, iosJpgCmd, isUseGzip, filters, RGBMode
+    global tpDir, tpPath, gzipBin, iosPngCmd, iosJpgCmd, isUseGzip, filters, RGBMode, isConvertMP
     
     fastTag = "fast"
     
@@ -232,7 +234,7 @@ def work():
     
     targetFiles = []
     
-    opts, args = getopt.getopt(sys.argv[1:], "d:t:g:f:s:m:")
+    opts, args = getopt.getopt(sys.argv[1:], "d:t:g:f:s:m:p")
     for op, value in opts:
         if op == "-d":
             targetFiles.append(value)
@@ -260,6 +262,8 @@ def work():
                 RGBMode = "JPG"
             elif value == "PVR":
                 RGBMode = "PVR"
+        elif op == "-p":
+            isConvertMP = True
                 
     if isCmdChange:    
         tpPath = os.path.join(tpDir, "etcpack.exe ")
