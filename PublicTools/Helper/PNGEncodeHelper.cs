@@ -28,24 +28,33 @@ namespace PublicTools.Helper
             PVRTC4
         };
         public ConvertType convertType = ConvertType.ETC;
+        public bool isFast { get; set; }
 
         string getToolPath(ConvertType type)
         {
             string ret = "";
+            string param = "";
             switch (type)
             {
                 case ConvertType.ETC:
                     ret = System.IO.Path.Combine(Global.toolsDir, "PackImg2Mng.py");
+                    param += " -m ETC ";
                     break;
                 case ConvertType.JPGA:
+                    ret = System.IO.Path.Combine(Global.toolsDir, "PackImg2Mng.py");
+                    param += " -m JPG ";
                     break;
                 case ConvertType.PVR:
+                    ret = System.IO.Path.Combine(Global.toolsDir, "PackImg2Mng.py");
+                    param += " -m PVR ";
                     break;
                 case ConvertType.PVRTC4:
+                    ret = System.IO.Path.Combine(Global.toolsDir, "PackImg2Mng.py");
+                    param += " -m PVR ";
                     break;
 
             }
-            return ret;
+            return ret + param;
         }
 
         public override void workWithFileList(System.Array arr, bool isOverlap = true)
@@ -56,7 +65,12 @@ namespace PublicTools.Helper
             List<string> paths = new List<string>();
             foreach (String path in arr)
             {
-                param += " -d " + path;
+                param += " -d \"" + path + "\"";
+            }
+
+            if (!isFast)
+            {
+                param += " -s slow ";
             }
 
             executeFilePath = @"python.exe";

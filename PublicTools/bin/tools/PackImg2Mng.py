@@ -26,11 +26,18 @@ projectdir = os.path.dirname(os.path.realpath(__file__))
 tpDir = projectdir
 tpPath = os.path.join(projectdir, "etcpack.exe ")
 gzipBin = os.path.join(projectdir, "gzip.exe ")  
+mpBin = os.path.join(projectdir, "MPConvert.exe ")  
 
-iosPngCmd = """%s %%s %%s -c etc1 -as """ % (tpPath)
+iosPngCmd = """%s %%s %%s -c etc1 -s slow -as """ % (tpPath)
+iosJpgCmd = """%s %%s %%s -c etc1 -s slow  """ % (tpPath)
+
+iosPngCmd = """%s %%s %%s -c etc1  -as """ % (tpPath)
 iosJpgCmd = """%s %%s %%s -c etc1  """ % (tpPath)
 
 isUseGzip = True
+isSaveTransFile = False
+
+RGBMode = "ETC"
 
 isShowFilesCount = False
 GzipCnt = 0
@@ -121,10 +128,11 @@ def work_file(filename):
                 tmpFile.write(alphafile.read())
                 alphafile.close()
                 
-                if os.path.exists(rgbname):
-                    os.remove(rgbname)
-                if os.path.exists(alphaname):
-                    os.remove(alphaname)
+                if not isSaveTransFile:
+                    if os.path.exists(rgbname):
+                        os.remove(rgbname)
+                    if os.path.exists(alphaname):
+                        os.remove(alphaname)
                     
             except Exception:
                 print "error !!!", filename, "cannot convert."
@@ -194,6 +202,11 @@ def work_async(tardir):
             files.append((relativeFilename, 0, filename))
         elif filename.find(".jpg") != -1:
             files.append((relativeFilename, 1, filename))
+        elif filename.find(".mp3") != -1:
+            pass
+        elif filename.find(".mp") != -1:
+            print("Convert mp:", filename)
+            os.system("%s %s" % (mpBin, filename))
     
     trdcount = 10
     
@@ -204,41 +217,58 @@ def work_async(tardir):
     for info in files:
         count = count + 1
         work_file(info[2])
-        print("pack[%d/%d]: %s" % (count, length, info[2]))
+        print("pack[%d/%d]: %s" % (count, length, info[0]))
 
     pass
     
 def work():
     isShowFilesCount = True
     
-    global tpDir, tpPath, gzipBin, iosPngCmd, iosJpgCmd, isUseGzip, filters
+    global tpDir, tpPath, gzipBin, iosPngCmd, iosJpgCmd, isUseGzip, filters, RGBMode
     
-    isToolDirChange = False
+    fastTag = "fast"
+    
+    isCmdChange = False
     
     targetFiles = []
     
-    opts, args = getopt.getopt(sys.argv[1:], "d:t:g:f:")
+    opts, args = getopt.getopt(sys.argv[1:], "d:t:g:f:s:m:")
     for op, value in opts:
         if op == "-d":
             targetFiles.append(value)
         elif op == "-t":
-            isToolDirChange = True
+            isCmdChange = True
             tpDir = value
         elif op == "-g":
             if value == 'true':
                 isUseGzip = True
             else:
                 isUseGzip = False
+        elif op == "-s":
+            isCmdChange = True
+            if value == 'fast':
+                fastTag = "fast"
+            else:
+                fastTag = "slow"
         elif op == "-f":
             filters.append(value)
-    
-    if isToolDirChange:    
+        elif op == "-m":
+            isCmdChange = True
+            if value == "ETC":
+                RGBMode = "ETC"
+            elif value == "JPG":
+                RGBMode = "JPG"
+            elif value == "PVR":
+                RGBMode = "PVR"
+                
+    if isCmdChange:    
         tpPath = os.path.join(tpDir, "etcpack.exe ")
         gzipBin = os.path.join(tpDir, "gzip.exe ")
 
-        iosPngCmd = """%s %%s %%s -c etc1 -as """ % (tpPath)
-        iosJpgCmd = """%s %%s %%s -c etc1  """ % (tpPath)
-    
+        iosPngCmd = """%s %%s %%s -c etc1 -s %s -as """ % (tpPath, fastTag)
+        iosJpgCmd = """%s %%s %%s -c etc1 -s %s """ % (tpPath, fastTag)
+        
+    print targetFiles
     if len(targetFiles) > 0:
         for i in range(0, len(targetFiles)):
             filepath = targetFiles[i]
@@ -261,4 +291,7 @@ def work():
     print( "Complete: Gzip:%d, Mng:%d, Pkm:%d, Pass:%d ==  %d" % ( GzipCnt, MngCnt, PkmCnt, PassCnt, GzipCnt + MngCnt + PkmCnt + PassCnt ) )    
     
 if __name__ == '__main__': 
-    work()
+    try:
+        work()
+    except Exception, e:
+        print Exception, e

@@ -45,6 +45,8 @@ namespace PublicTools
             bool isPVREncode = PVREncodeTag.IsChecked.Value;
             bool isPVRTC4Encode = PVRTC4EncodeTag.IsChecked.Value;
 
+            PNGEncodeHelper.Instance.isFast = pngIsFast.IsChecked.Value;
+
             if (isETCEncode)
             {
                 PNGEncodeHelper.Instance.convertType = PNGEncodeHelper.ConvertType.ETC;

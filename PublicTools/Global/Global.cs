@@ -60,6 +60,8 @@ namespace PublicTools
                 return;
             }
 
+            Global.stateLabel.Clear(); 
+
             updateDescription("执行文件: " + filePath);
             updateDescription("执行参数: " + param);
             updateDescription("输出:");
@@ -107,15 +109,17 @@ namespace PublicTools
 
         public static void updateDescription(object msg)
         {
-            syncContext.Post(updateDescription_, msg);
+            if (msg != null)
+            {
+                //Console.WriteLine(msg);
+                syncContext.Post(updateDescription_, msg);
+            }
         }
 
         static void updateDescription_(object msg)
         {
-            Global.stateLabel.Text += msg + Environment.NewLine;
+            Global.stateLabel.AppendText(msg.ToString() + Environment.NewLine);
             Global.stateLabel.ScrollToEnd();
-
-            //Console.WriteLine(msg);
         }
     }
 }
