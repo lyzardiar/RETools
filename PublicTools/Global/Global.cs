@@ -52,6 +52,16 @@ namespace PublicTools
             }
         }
 
+        public static string svnDiffHelper
+        {
+            get
+            {
+                string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(path), "../tools/svnDiffHelper.py");
+                return path;
+            }
+        }
+
         public static void execute(string filePath, string param)
         {
             if (isLocked)

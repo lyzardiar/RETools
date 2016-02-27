@@ -111,7 +111,10 @@ namespace PublicTools
 
         private void GenDiffButton_Click(object sender, RoutedEventArgs e)
         {
-            SVNHelper.getDiff(0);
+            string executeFilePath;
+            string param = Global.svnDiffHelper;
+            executeFilePath = @"python.exe";
+            Global.execute(executeFilePath, param);
         }
     }
 }
