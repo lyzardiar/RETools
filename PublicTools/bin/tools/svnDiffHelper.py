@@ -107,7 +107,7 @@ def work():
                 elif item == "deleted":
                     deleteList[path] = True
                
-        filterExt = [".lua", ".map", ".png", "jpg", ".json", ".xml", ".txt"]
+        filterExt = [".lua", ".map", ".png", "jpg", ".json", ".xml", ".txt", ".atlas"]
         filterFile = [r"LuaScript\MEGameStartup.lua", r"MEFramework\init.lua", r"MEFramework\Main.lua"]
         for path in changeList:
             if deleteList.get(path):
@@ -125,17 +125,19 @@ def work():
             if not isNeedCopy:
                 continue
             # if relpath.startswith("res"):
-            if relpath.find("Main.lua") == -1:
-                shutil.copy(path, os.path.join(publicpath, relpath))
-                print 'copy file:', os.path.join(publicpath, relpath)
-                sys.stdout.flush() 
+            print 'copy file:', os.path.join(publicpath, relpath)
+            pathdir = os.path.dirname(os.path.join(publicpath, relpath))
+            if not os.path.isdir(pathdir):
+                os.makedirs(pathdir) 
+            shutil.copy(path, os.path.join(publicpath, relpath))
+            sys.stdout.flush() 
         
         for key in deleteList.keys(): 
             relpath = os.path.relpath(key, tarpath) 
             if relpath.startswith(""):
                 if os.path.exists(os.path.join(publicpath, relpath)):
-                    os.remove(os.path.join(publicpath, relpath))
                     print 'del file:', os.path.join(publicpath, relpath)
+                    os.remove(os.path.join(publicpath, relpath))
                     sys.stdout.flush() 
 
     
@@ -147,7 +149,7 @@ def work():
     pass
 
 if __name__ == '__main__': 
-    try:
-        work()
-    except Exception, e:
-        print Exception, e
+    # try:
+    work()
+    # except Exception, e:
+        # print e
