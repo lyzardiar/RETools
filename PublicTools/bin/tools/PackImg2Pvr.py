@@ -25,7 +25,7 @@ key2 = 'b01f170e'
 key3 = 'cffa905c'
 key4 = '71ffb7f3'
 
-usekey = False
+usekey = True
 usePlist = False
 
 keyCmd = ''
@@ -37,11 +37,7 @@ if usekey:
 if usePlist: 
     plistCmd = '--data "%s.plist"'
 
-tpPath = "D:/CodeAndWeb2/TexturePacker/bin/TexturePacker.exe"
-
-tpPath = 'D:/CodeAndWeb3/TexturePacker/bin/TexturePacker.exe '
-
-tpPath = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Develop\Tools\ios\tp\TexturePacker.exe "
+tpPath = r"E:\Workspace\Tools\RETools\trunk\PublicTools\bin\tools/TexturePacker.exe"
 
 androidPngCmd = """%s "%%s" --quiet --format cocos2d --texture-format pvr3ccz --opt RGBA8888 --premultiply-alpha %s %%s --sheet "%%s" --disable-rotation --max-size 4096 """ % (tpPath, keyCmd)
 androidJpgCmd = """%s "%%s" --quiet --format cocos2d --texture-format pvr3ccz --jpg-quality 95 --opt RGB565 %s %%s --sheet "%%s" --disable-rotation --max-size 4096 """ % (tpPath, keyCmd)
@@ -49,8 +45,11 @@ androidJpgCmd = """%s "%%s" --quiet --format cocos2d --texture-format pvr3ccz --
 iosPngCmd = """%s "%%s" --quiet --format cocos2d --texture-format pvr3ccz --pvr-quality high --opt PVRTC4           --dither-type FloydSteinbergAlpha --premultiply-alpha   %s %%s --sheet "%%s" --disable-rotation --max-size 4096 --size-constraints AnySize """ % (tpPath, keyCmd)
 iosJpgCmd = """%s "%%s" --quiet --format cocos2d --texture-format pvr3ccz --pvr-quality high --opt PVRTC4_NOALPHA   --dither-type FloydSteinberg                            %s %%s --sheet "%%s" --disable-rotation --max-size 4096 --size-constraints AnySize """ % (tpPath, keyCmd)
 
-iosPngCmd = """%s "%%s" --quiet --format cocos2d --texture-format pvr2ccz --opt PVRTC4   --dither-fs-alpha   %s %%s --sheet "%%s" --disable-rotation --max-size 4096 """ % (tpPath, keyCmd)
+iosPngCmd = """%s "%%s" --quiet --format cocos2d-x --texture-format pvr3ccz --opt ETC1_ALPHA   %s %%s --sheet "%%s" --disable-rotation --max-size 4096 --size-constraints AnySize """ % (tpPath, keyCmd)
 # iosPngCmd = """%s "%%s" --quiet --format cocos2d --texture-format pvr2ccz --opt RGBA8888   --dither-fs-alpha   %s %%s --sheet "%%s" --disable-rotation --max-size 4096 --size-constraints AnySize """ % (tpPath, keyCmd)
+
+iosPngCmd = """%s "%%s" --quiet --format cocos2d-x --texture-format pvr3ccz --opt RGB565    %s --dither-type FloydSteinberg %%s --sheet "%%s" --disable-rotation --max-size 4096 --size-constraints AnySize """ % (tpPath, keyCmd)
+iosPngAlphaCmd = """%s "%%s" --quiet --format cocos2d-x --texture-format jpg --opt ALPHA    --jpg-quality 95 %%s --sheet "%%s" --disable-rotation --max-size 4096 --size-constraints AnySize """ % (tpPath)
 
 
 #压缩参数路径下的所有图片成pvr.ccz
@@ -78,15 +77,15 @@ def work_file(filename):
         plstcmd = plistCmd % (plistfilename)
     
     cmdIosStr = imgCmd % (imgfilename, plstcmd, pvrfilename)
-
     print(cmdIosStr)
-    
     os.system(cmdIosStr)
-    #os.remove(imgfilename)
-    os.rename(pvrfilename, imgfilename)
+    
+    pvralphafilename = imgfilename.replace(ext, "_alpha.jpg")
+    cmdIosStr = iosPngAlphaCmd % (imgfilename, plstcmd, pvralphafilename)
+    print(cmdIosStr)
+    os.system(cmdIosStr)
 
-    #os.remove("out.plist")    
-
+    
     pass
 
 
