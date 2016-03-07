@@ -108,7 +108,7 @@ def work():
                     deleteList[path] = True
                
         filterExt = [".lua", ".map", ".png", "jpg", ".json", ".xml", ".txt", ".atlas"]
-        filterFile = [r"LuaScript\MEGameStartup.lua", r"MEFramework\init.lua", r"MEFramework\Main.lua"]
+        filterFile = [r"LuaScript\MEGameStartup.lua", r"MEFramework\init.lua", r"MEFramework\Main.lua", "config1"]
         for path in changeList:
             if deleteList.get(path):
                 del deleteList[path]
