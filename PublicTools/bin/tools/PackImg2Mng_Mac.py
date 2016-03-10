@@ -47,7 +47,7 @@ isConvertMP = False
 
 isUseEtcInJpg = False
 
-RGBMode = "JPG"
+RGBMode = "ETC"
 
 isShowFilesCount = False
 GzipCnt = 0
@@ -60,10 +60,10 @@ filters = ["crater"]
 def updateConvertCMD(fastTag):
     global RGBMode, iosPngCmd, iosJpgCmd, tpPath, gzipBin, mpBin, convertBin, isUseGzip
   
-    # tpPath = os.path.join(tpDir, "etcpack.exe ")
-    # gzipBin = os.path.join(tpDir, "gzip.exe ")
-    # mpBin = os.path.join(tpDir, "MPConvert.exe ") 
-    # convertBin = os.path.join(tpDir, "convert.exe ") 
+    tpPath = os.path.join(tpDir, "etcpack.exe ")
+    gzipBin = os.path.join(tpDir, "gzip.exe ")
+    mpBin = os.path.join(tpDir, "MPConvert.exe ") 
+    convertBin = os.path.join(tpDir, "convert.exe ") 
         
     if RGBMode == "ETC":
         iosPngCmd = """%s %%s %%s -c etc1 -s %s -as """ % (tpPath, fastTag)
@@ -79,9 +79,8 @@ def updateConvertCMD(fastTag):
         if isUseEtcInJpg:
             iosPngCmd = """%s %%s -quality 85 -background black -alpha remove %%s """ % (convertBin)
             iosJpgCmd = """%s %%s -quality 85 -alpha extract %%s """ % (convertBin)
-            isUseGzip = True
-        else:
-            isUseGzip = False
+        
+        isUseGzip = False
         
     elif RGBMode == "PVR":
         isUseGzip = True
@@ -175,23 +174,25 @@ def work_file_Jpg(filename):
         isPng = True
     elif filename.find(".jpg") != -1:
         isPng = False
+        PassCnt = PassCnt + 1
+        return
     else:
         PassCnt = PassCnt + 1
         return
+    
+    jpgCMD = iosPngCmd % (filepath, filepath.replace(".png", ".jpg")) 
+    alphaCmd = iosJpgCmd % (filepath, filepath.replace(".png", ".alpha.jpg"))
+    # print jpgCMD, alphaCmd     
+    try:                   
+        os.system(jpgCMD) 
+        os.system(alphaCmd)   
+    except Exception:
+        print "error33 !!!", filename, "cannot convert."
+        pass
+    finally:
+        pass
   
     if isPng:   
-        jpgCMD = iosPngCmd % (filepath, filepath.replace(".png", ".jpg")) 
-        alphaCmd = iosJpgCmd % (filepath, filepath.replace(".png", ".alpha.jpg"))
-        # print jpgCMD, alphaCmd     
-        try:                   
-            os.system(jpgCMD) 
-            os.system(alphaCmd)   
-        except Exception:
-            print "error33 !!!", filename, "cannot convert."
-            pass
-        finally:
-            pass
-    
         tmpfilename = filepath.replace(".png", ".tmp")
         if os.path.exists(tmpfilename):
             os.remove(tmpfilename)
@@ -241,7 +242,7 @@ def work_file_Jpg(filename):
         if isSuccess:  
             if isUseGzip:
                 GzipCnt = GzipCnt + 1 
-                gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
+                gzip_cmd = gzipBin + tmpfilename + " -N -f -9"
                 os.system(gzip_cmd)
                 if os.path.exists(tmpfilename.replace(".tmp", ".png")):
                     os.remove(tmpfilename.replace(".tmp", ".png"))
@@ -255,80 +256,13 @@ def work_file_Jpg(filename):
             PassCnt = PassCnt + 1
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
-    else:    
-        tmpfilename = filepath.replace(".jpg", ".tmp")
-        if os.path.exists(tmpfilename):
-            os.remove(tmpfilename)
-        isSuccess = True
-        with open(tmpfilename, 'wb+') as tmpFile:
-            try: 
-                tmpFile.write('MNG')
                 
-                rgbname = filepath
-                
-                if isUseEtcInJpg and (not convertJPG2ETC(rgbname)):
-                    print "convert Error : jpg to etc"
-                    return
-                                 
-                statinfo = os.stat(rgbname)
-                fileSize = statinfo.st_size
-                
-                tmpFile.write(pack("i", fileSize))
-                rgbfile = open(rgbname, "rb")
-                tmpFile.write(rgbfile.read())
-                rgbfile.close()
-                
-                tmpFile.write(pack("i", 0))
-                
-                if not isSaveTransFile:
-                    if os.path.exists(rgbname):
-                        os.remove(rgbname)
-                    
-            except Exception, e:
-                print "error !!!", filename, "cannot convert.", e
-                isSuccess = False
-                pass
-            finally: 
-                pass
-                
-              
-        if isSuccess:  
-            if isUseGzip:
-                GzipCnt = GzipCnt + 1 
-                gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
-                os.system(gzip_cmd)
-                if os.path.exists(tmpfilename.replace(".tmp", ".jpg")):
-                    os.remove(tmpfilename.replace(".tmp", ".jpg"))
-                os.rename(tmpfilename + ".gz", tmpfilename.replace(".tmp", ".jpg"))
-            else: 
-                MngCnt = MngCnt + 1
-                if os.path.exists(tmpfilename.replace(".tmp", ".jpg")):
-                    os.remove(tmpfilename.replace(".tmp", ".jpg"))
-                os.rename(tmpfilename, tmpfilename.replace(".tmp", ".jpg"))
-        else:
-            PassCnt = PassCnt + 1
-            if os.path.exists(tmpfilename):
-                os.remove(tmpfilename)
- 
-preAlphaArr = ['icon/', 'ui/', 'uiNew/', 'icon\\', 'ui\\', 'uiNew\\']
-def needPreAplha(filepath):
-    for name in preAlphaArr:
-        if filepath.find(name) != -1:
-            return False
-    return True
-
- 
 def work_file_ETC(filename):
     global GzipCnt, MngCnt, PkmCnt, PassCnt, filters
     filepath = os.path.realpath(filename)
     filedir = os.path.dirname(filepath)
 
     sys.stdout.flush() 
-
-    preAlpha = needPreAplha(filedir)
-    preCMD = " -p "
-    if not preAlpha:
-        preCMD = ""
     
     for filtername in filters:
         if filepath.find(filtername) != -1:
@@ -371,9 +305,9 @@ def work_file_ETC(filename):
        
     imgCmd = imgCmd % (filepath, filedir) 
     
-    rgbCMD = """ %s -f ETC1 %s -q etcfast -i %s -o %s """ % (pvrTexToolBin, preCMD, filepath, filepath.replace(".png", ".pvr"))
+    rgbCMD = """ %s -f ETC1 -p -q etcslow -i %s -o %s """ % (pvrTexToolBin, filepath, filepath.replace(".png", ".pvr"))
     alphaCMD = """%s %s -alpha extract %s """ % (convertBin, filepath, filepath.replace(".png", ".alpha.jpg"))
-    alphaJPGCMD = """ %s -f ETC1 -q etcfast -i %s -o %s """ % (pvrTexToolBin, filepath.replace(".png", ".alpha.jpg"), filepath.replace(".png", ".alpha.pvr"))
+    alphaJPGCMD = """ %s -f ETC1 -q etcslow -i %s -o %s """ % (pvrTexToolBin, filepath.replace(".png", ".alpha.jpg"), filepath.replace(".png", ".alpha.pvr"))
     
     try:   
         if isPng:
@@ -392,12 +326,8 @@ def work_file_ETC(filename):
 
             if os.path.exists(filepath.replace(".png", ".alpha.jpg")):
                 os.remove(filepath.replace(".png", ".alpha.jpg"))            
-        else:    
-            if os.path.exists(filepath.replace(".jpg", ".pkm")):
-                os.remove(filepath.replace(".jpg", ".pkm"))         
-            rgbCMD = """ %s -f ETC1 -p -q etcfast -i %s -o %s """ % (pvrTexToolBin, filepath, filepath.replace(".jpg", ".pvr"))
-            os.system(rgbCMD)
-            os.rename(filepath.replace(".jpg", ".pvr"), filepath.replace(".jpg", ".pkm"))  
+        else:        
+            os.system(imgCmd)
         
     except Exception:
         print "error !!!", filename, "cannot convert."
@@ -434,11 +364,6 @@ def work_file_ETC(filename):
                 tmpFile.write(alphafile.read())
                 alphafile.close()
                 
-                if preAlpha:
-                    tmpFile.write('p')
-                else:
-                    tmpFile.write('P')
-                
                 if not isSaveTransFile:
                     if os.path.exists(rgbname):
                         os.remove(rgbname)
@@ -456,7 +381,7 @@ def work_file_ETC(filename):
         if isSuccess:  
             if isUseGzip:
                 GzipCnt = GzipCnt + 1 
-                gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
+                gzip_cmd = gzipBin + tmpfilename + " -N -f -9"
                 os.system(gzip_cmd)
                 if os.path.exists(tmpfilename.replace(".tmp", ".png")):
                     os.remove(tmpfilename.replace(".tmp", ".png"))
@@ -482,7 +407,7 @@ def work_file_ETC(filename):
         if isUseGzip:
             GzipCnt = GzipCnt + 1 
             
-            gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
+            gzip_cmd = gzipBin + tmpfilename + " -N -f -9"
             os.system(gzip_cmd)
             if os.path.exists(tmpfilename.replace(".pkm", ".jpg")):
                 os.remove(tmpfilename.replace(".pkm", ".jpg"))
@@ -532,16 +457,14 @@ def work_async(tardir):
     
     length = len(files)
     count = 0
-    can_quiet = False    
+    can_quiet = False
     
-    while True:
-        info = files[count]
-        work_file(info[2])
-        
+    for info in files:
         count = count + 1
+        work_file(info[2])
         print("pack[%d/%d]: %s" % (count, length, info[0]))
-        if count >= length:
-            break
+
+    pass
     
 def work():
     isShowFilesCount = True
@@ -599,17 +522,15 @@ def work():
         if len(sys.argv) > 1:
             inputFile = sys.argv[1]
             for i in range(1, len(sys.argv)):
-                filepath = os.path.realpath(sys.argv[i])
+                filepath = sys.argv[i]
                 if os.path.isdir(filepath):
                     work_async(filepath)
                 else:
                     work_file(filepath)
         else:
             curdir = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Develop\Resource_JPG"
-            curdir = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Develop\Resource_JPG"
             work_async(curdir)
     print( "Complete: Gzip:%d, Mng:%d, Pkm:%d, Pass:%d ==  %d" % ( GzipCnt, MngCnt, PkmCnt, PassCnt, GzipCnt + MngCnt + PkmCnt + PassCnt ) )    
-    os.system("pause")
     
 if __name__ == '__main__': 
     try:

@@ -151,5 +151,6 @@ def work():
 if __name__ == '__main__': 
     # try:
     work()
+    os.system("pause")
     # except Exception, e:
         # print e
