@@ -45,6 +45,7 @@ function work(filepath)
     indexContents = indexContents .. ' }'
     
     local content = string.format([[
+local setmetatable = setmetatable
 %s
 local mt = {  
     __index = function(t, key)
@@ -58,24 +59,24 @@ local mt = {
 local t = {]], indexContents)
     
     for k, v in pairs(ret) do 
-        local line = string.format("[%d] = { ", v[keys[1]])
+        local line = string.format("[%d] = setmetatable({ ", v[keys[1]])
         for _, key in ipairs(keys) do 
             local val = v[key]
             local tp = type(val)
             if tp == 'string' then 
-                line = string.format("%s\"%s\", ", line, val)
+                line = string.format([==[%s[=[%s]=], ]==], line, string.gsub(val, "\n", "\\n"))
             elseif tp == 'bool' then 
-                line = string.format("%s%s, ", line, val and "true" or "false")
+                line = string.format([[%s%s, ]], line, val and "true" or "false")
             elseif tp == 'number' then 
-                line = string.format("%s%d, ", line, val)
+                line = string.format([[%s%d, ]], line, val)
             end
         end
-        line = line .. '},'
+        line = line .. '}, mt),'
         
         content = string.format('%s\n\t%s', content, line)
     end
     
-    content = content .. '\n}\nsetmetatable(t, mt)\nreturn t'
+    content = content .. '\n}\nreturn t'
  
     local file = io.open(filepath .. '', "wb")
     file:write(content)
