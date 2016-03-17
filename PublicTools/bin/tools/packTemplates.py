@@ -16,33 +16,27 @@ import struct
 from pprint import pprint 
 from struct import *
 
+projectdir = os.path.dirname(os.path.realpath(__file__))
+
+luaPackBin = os.path.join(projectdir, "packTemplates.lua")
+
 def iter_find_files(path, fnexp):
     for root, dirs, files, in os.walk(path):
         for filename in fnmatch.filter(files, fnexp):
             yield os.path.join(root, filename)
 
 def work_file(filepath):
+    if filepath.find(".lua") == -1:
+        print("Pass none lua file.")
+        return
+    
     filepath = os.path.realpath(filepath)
-
-    with open(filepath, 'rb') as tmpFile:
-        tmpContent = tmpFile.read(3)
-        if tmpContent[0] == '\x1f' and tmpContent[1] == '\x8b':
-            print "Gzip File, pass."
-            return
-    
-    gzip_cmd = "gzip " + filepath + " -n -f -9"
-    os.system(gzip_cmd)
-    
-    if os.path.exists(filepath):
-        os.remove(filepath)
-    
-    if os.path.exists(filepath + ".gz"):
-        os.rename(filepath + ".gz", filepath) 
+    os.system("lua %s %s" % (luaPackBin, filepath))
     pass
     
 def work_async(tardir):
     for filename in iter_find_files(tardir, "*.*"):
-        if filename.find(".map") != -1:
+        if filename.find(".lua") != -1:
             work_file(filename)
             pass             
             
@@ -57,7 +51,7 @@ def work():
                 work_file(filepath)
     else:
         curdir = r"C:\WorkSpace\Public\TX\Android\main\config\maps\Scene"
-        curdir = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Develop\Resource_release\config\maps\Scene"
+        curdir = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Develop\Resource\config\template"
         work_async(curdir)    
     os.system("pause")
     
