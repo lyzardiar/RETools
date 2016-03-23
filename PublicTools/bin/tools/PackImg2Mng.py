@@ -42,7 +42,7 @@ iosPngCmd = """%s %%s %%s -c etc1  -as """ % (tpPath)
 iosJpgCmd = """%s %%s %%s -c etc1  """ % (tpPath)
 
 isUseGzip = True
-isSaveTransFile = False
+isSaveTransFile = True
 isConvertMP = False
 
 isUseEtcInJpg = False
@@ -73,7 +73,9 @@ def updateConvertCMD(fastTag):
     elif RGBMode == "JPG":  
         # convert Bird.png -quality 95  -background black -alpha remove Bird.jpg
         # convert Bird.png -sample 75%%%%x75%%%% -quality 95  -alpha extract Bird_alpha_mask.png
+        
         iosPngCmd = """%s %%s -background black -alpha remove %%s """ % (convertBin)
+        iosPngCmd = """%s %%s -background black %%s """ % (convertBin)
         iosJpgCmd = """%s %%s -alpha extract %%s """ % (convertBin)
         
         if isUseEtcInJpg:
@@ -326,6 +328,7 @@ def work_file_ETC(filename):
     sys.stdout.flush() 
 
     preAlpha = needPreAplha(filedir)
+    
     preCMD = " -p "
     if not preAlpha:
         preCMD = ""
@@ -496,10 +499,169 @@ def work_file_ETC(filename):
     
            
     pass
+ 
+def work_file_ETC2(filename):
+    global GzipCnt, MngCnt, PkmCnt, PassCnt, filters
+    filepath = os.path.realpath(filename)
+    filedir = os.path.dirname(filepath)
 
-def work_file(filename):    
+    sys.stdout.flush() 
+    
+    for filtername in filters:
+        if filepath.find(filtername) != -1:
+            PassCnt = PassCnt + 1
+            return
+    
+    with open(filepath, 'rb') as tmpFile:
+        tmpContent = tmpFile.read(3)
+        if tmpContent[0] == '\x1f' and tmpContent[1] == '\x8b':
+            print "Gzip File, pass."
+            GzipCnt = GzipCnt + 1
+            return
+        if tmpContent == "MNG":
+            print "MNG File, pass."
+            MngCnt = MngCnt + 1
+            return
+        if tmpContent == "PKM":
+            print "PKM File, pass."
+            PkmCnt = PkmCnt + 1
+            return
+            
+    os.chdir(tpDir)
+    
+    isPng = True
+    if filename.find(".png") != -1:
+        isPng = True
+    elif filename.find(".jpg") != -1:
+        isPng = False
+    else:
+        return
+
+    if isPng: 
+        imgCmd = iosPngCmd           
+    else:
+        imgCmd = iosJpgCmd 
+        
+    if imgCmd == "":
+        PassCnt = PassCnt + 1
+        return
+       
+    imgCmd = imgCmd % (filepath, filedir) 
+    
+    try:   
+        if isPng:
+            if os.path.exists(filepath.replace(".png", ".pkm")):
+                os.remove(filepath.replace(".png", ".pkm"))
+            if os.path.exists(filepath.replace(".png", "_alpha.pkm")):
+                os.remove(filepath.replace(".png", "_alpha.pkm"))
+        
+            os.system(imgCmd)             
+        else:    
+            if os.path.exists(filepath.replace(".jpg", ".pkm")):
+                os.remove(filepath.replace(".jpg", ".pkm"))         
+            os.system(imgCmd) 
+        
+    except Exception:
+        print "error !!!", filename, "cannot convert."
+        pass
+    finally:
+        pass
+  
+    if isPng:   
+        tmpfilename = filepath.replace(".png", ".tmp")
+        if os.path.exists(tmpfilename):
+            os.remove(tmpfilename)
+        
+        isSuccess = True
+        with open(tmpfilename, 'wb+') as tmpFile:
+            try: 
+                tmpFile.write('MNG')
+                
+                rgbname = filepath.replace(".png", ".pkm") 
+                alphaname = filepath.replace(".png", "_alpha.pkm") 
+                
+                statinfo = os.stat(rgbname)
+                fileSize = statinfo.st_size
+                
+                tmpFile.write(pack("i", fileSize))
+                rgbfile = open(rgbname, "rb")
+                tmpFile.write(rgbfile.read())
+                rgbfile.close()
+                
+                statinfo = os.stat(alphaname)
+                fileSize = statinfo.st_size
+                
+                tmpFile.write(pack("i", fileSize))
+                alphafile = open(alphaname, "rb")
+                tmpFile.write(alphafile.read())
+                alphafile.close()
+                
+                if not isSaveTransFile:
+                    if os.path.exists(rgbname):
+                        os.remove(rgbname)
+                    if os.path.exists(alphaname):
+                        os.remove(alphaname)
+                    
+            except Exception:
+                print "error !!!", filename, "cannot convert."
+                isSuccess = False
+                pass
+            finally: 
+                pass
+                
+              
+        if isSuccess:  
+            if isUseGzip:
+                GzipCnt = GzipCnt + 1 
+                gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
+                os.system(gzip_cmd)
+                if os.path.exists(tmpfilename.replace(".tmp", ".png")):
+                    os.remove(tmpfilename.replace(".tmp", ".png"))
+                os.rename(tmpfilename + ".gz", tmpfilename.replace(".tmp", ".png"))
+            else: 
+                MngCnt = MngCnt + 1
+                if os.path.exists(tmpfilename.replace(".tmp", ".png")):
+                    os.remove(tmpfilename.replace(".tmp", ".png"))
+                os.rename(tmpfilename, tmpfilename.replace(".tmp", ".png"))
+        else:
+            PassCnt = PassCnt + 1
+            if os.path.exists(tmpfilename):
+                os.remove(tmpfilename)
+            
+    else:
+        tmpfilename = filepath.replace(".jpg", ".pkm") 
+        
+        if not os.path.exists(tmpfilename):
+            print "error !!!", filepath, "cannot convert."
+            PassCnt = PassCnt + 1
+            return
+        
+        if isUseGzip:
+            GzipCnt = GzipCnt + 1 
+            
+            gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
+            os.system(gzip_cmd)
+            if os.path.exists(tmpfilename.replace(".pkm", ".jpg")):
+                os.remove(tmpfilename.replace(".pkm", ".jpg"))
+            os.rename(tmpfilename + ".gz", tmpfilename.replace(".pkm", ".jpg"))
+        else:
+            PkmCnt = PkmCnt + 1
+            
+            if os.path.exists(tmpfilename.replace(".pkm", ".jpg")):
+                os.remove(tmpfilename.replace(".pkm", ".jpg"))
+            os.rename(tmpfilename, tmpfilename.replace(".pkm", ".jpg"))
+    
+           
+    pass
+
+def work_file(filename):  
+    if filename.find(".mp") != -1:
+        if isConvertMP:
+            print("Convert mp:", filename)
+            os.system("%s %s" % (mpBin, filename))  
+            return
     if RGBMode == "ETC":
-        work_file_ETC(filename)
+        work_file_ETC2(filename)
     elif RGBMode == "JPG":
         work_file_Jpg(filename)
     elif RGBMode == "PVR":

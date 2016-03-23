@@ -59,7 +59,7 @@ local mt = {
 local t = {]], indexContents)
     
     for k, v in pairs(ret) do 
-        local line = string.format("[%d] = setmetatable({ ", v[keys[1]])
+        local line = string.format("[%d] = [===[setmetatable({ ", v[keys[1]])
         for _, key in ipairs(keys) do 
             local val = v[key]
             local tp = type(val)
@@ -71,7 +71,7 @@ local t = {]], indexContents)
                 line = string.format([[%s%d, ]], line, val)
             end
         end
-        line = line .. '}, mt),'
+        line = line .. '}, mt) ]===],'
         
         content = string.format('%s\n\t%s', content, line)
     end
