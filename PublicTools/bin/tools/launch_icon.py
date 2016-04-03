@@ -5,10 +5,10 @@ curPath = os.path.dirname(os.path.realpath(__file__))
 
 sizeList = [(320, 480), (640, 960), (640, 1136), (750, 1334), (1242, 2208), (1024, 748), (1024, 768), (2048, 1496), (2048, 1536), (2208, 1242)]
 
-scale = 0.9 * 0.7
+scale = 0.9 * 0.7 * 0.6
 
 for size in sizeList:
-    imgContent = Image.open(curPath + "/logo.jpg")
+    imgContent = Image.open(curPath + "/ui_logo_01.jpg")
     
     logoWidth = imgContent.size[0]
     logoHeight = imgContent.size[1]
