@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <roots>
-  <root>G:/res_output</root>
-  <root>E:/runehero/code/tools/workspace_resource/Util</root>
-  <root>E:\runehero\code\tools\workspace_pack\PackTool\packroot</root>
-  <root>E:\runehero\code\tools\workspace_pack\PackTool\packroot1</root>
+  <root>C:/WorkSpace/Public/TX/Android/test</root>
 </roots>

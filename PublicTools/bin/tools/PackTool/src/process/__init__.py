@@ -1,3 +1,5 @@
+#coding=utf-8  
+
 from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import datetime
 import os
@@ -47,9 +49,10 @@ class Context:
     def getExportPath(self):
         return self.rootPath + os.sep + 'export'
     
-def queueProcess(queue):
+def queueProcess(queue, tcnt=4):
     errorQueue = Queue()
-    threads = os.cpu_count();
+    #threads = os.cpu_count();
+    threads = tcnt;
     print('threads : ' + str(threads))
     with ThreadPoolExecutor(threads) as pool :
         for i in range(1, threads + 1) :
@@ -74,5 +77,5 @@ def run(tid, queue, errorQueue):
 
 def execCmd(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    Log.printDetailln(str(p.stdout.read(), encoding='utf-8'))
+    # Log.printDetailln(str(p.stdout.read(), encoding='utf-8'))
     return p.wait()

@@ -34,7 +34,7 @@ class MainUI:
         self.frame.geometry('600x600')  # 是x 不是*
         self.frame.resizable(width=True, height=True)  # 宽不可变, 高可变,默认为True
         self.frame.minsize(700, 600)
-        self.frame.title('符文英雄客户端打包工具')
+        self.frame.title('工具集')
         
         '''工作目录'''
         panel1 = ttk.Labelframe(self.frame, text='工作目录')
