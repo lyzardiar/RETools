@@ -7,6 +7,9 @@ sizeList = [(320, 480), (640, 960), (640, 1136), (750, 1334), (1242, 2208), (102
 
 scale = 0.9 * 0.7 * 0.6
 
+        
+if not os.path.exists(os.path.join(curPath,  'launch')):
+    os.makedirs(os.path.join(curPath,  'launch'))
 for size in sizeList:
     imgContent = Image.open(curPath + "/ui_logo_01.jpg")
     
@@ -36,4 +39,4 @@ for size in sizeList:
     im.paste(imgContent, (pos[0], pos[1]))
     if not isLandscape:
         im = im.rotate(90)
-    im.save(curPath + "/Default" + str(size[0]) + "x" + str(size[1]) + ".png" , quality=95)
+    im.save(curPath + "/launch/Default" + str(size[0]) + "x" + str(size[1]) + ".png" , quality=95)

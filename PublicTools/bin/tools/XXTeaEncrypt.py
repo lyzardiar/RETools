@@ -18,8 +18,8 @@ else:
     inputpath = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Engine\proj.android\assets\LuaScript"
     outputpath = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Engine\proj.android\assets\LuaScript"
     
-    inputpath = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Engine\proj.android\assets\config\template"
-    outputpath = r"E:\Workspace\Mobilephone_DDT\trunk\Client\Engine\proj.android\assets\config\template"
+    inputpath = r"C:\WorkSpace\Public\TX\Android\Versions\Ver0.1.0.35878_origin_O\update\10007_pather_encode_2\config\ai"
+    outputpath = r"C:\WorkSpace\Public\TX\Android\Versions\Ver0.1.0.35878_origin_O\update\10007_pather_encode_2\config\ai"
     
     
     

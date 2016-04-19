@@ -50,7 +50,7 @@ def work():
     else:
         curdir = r"C:\WorkSpace\Public\TX\Android\Versions\config2"
         curdir = r"C:\WorkSpace\Public\TX\Android\Versions\Ver0.1.0.34809_encode"
-        curdir = r"C:\WorkSpace\Public\TX\Android\Versions\35570"
+        curdir = r"C:\WorkSpace\Public\TX\Android\markVersion_35742-35779_2"
         work_async(curdir)    
     os.system("pause")
     
