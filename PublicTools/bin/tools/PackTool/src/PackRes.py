@@ -20,7 +20,7 @@ import shutil
 from process import queueProcess, execCmd
 from util import Log
 from util import xxtea
-from util import PackXXTea, PackLua, RemoveUtf8Bom, PackImg2Mng_ETC
+from util import PackXXTea, PackLua, RemoveUtf8Bom, PackImage
 
 threadPool = ThreadPoolExecutor(1)
 
@@ -44,8 +44,8 @@ def _XXTeaEncode(tid, absFilePath, relativepath):
  
 def _convertImage(tid, absFilePath, relativepath):
     print("[线程%02d] 转换: %s" % (tid, relativepath))
-    ret = PackImg2Mng_ETC.convert(absFilePath)
     
+    ret = PackImage.convert(absFilePath) 
     return ret == 0
        
     
@@ -85,6 +85,11 @@ class PackLuajit(object):
                 print('\t' + file)
                 
         print("Compeleted.")
+        
+        if len(PackImage.passFiles) > 0 :
+            print("Pass Files:")
+            for passfile in PackImage.passFiles:
+                print('\t' + passfile)
         os.system('pause')
         return not errorQueue.empty()
  

@@ -39,7 +39,11 @@ def __compileLuac(absFilePath, relativepath = ''):
     
     
 def __compileLua(absFilePath, relativepath = ''):
-    ret = PackXXTea.encode(absFilePath)        
+    ret = 0
+    if absFilePath.find('LuaScript') != -1 or absFilePath.find('MEFramework') != -1:
+        if absFilePath.find('/ui/') == -1 and absFilePath.find('\\ui\\') == -1:
+            if absFilePath.find('/Scene/') == -1 and absFilePath.find('\\Scene\\') == -1:
+                ret = PackXXTea.encode(absFilePath)        
     return ret
 
 def __compileLuaJit(absFilePath, relativepath = ''):

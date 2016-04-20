@@ -39,14 +39,6 @@ isSaveTransFile = False
 
 RGBMode = "ETC"
 
-isShowFilesCount = False
-GzipCnt = 0
-MngCnt = 0
-PkmCnt = 0
-PassCnt = 0
-
-filters = ["crater"]
-
 def work_file_ETC(filename, isAlphaJPG = False):
     global GzipCnt, MngCnt, PkmCnt, PassCnt, filters
     filepath = os.path.realpath(filename)
@@ -59,37 +51,6 @@ def work_file_ETC(filename, isAlphaJPG = False):
     preCMD = " -p "
     if not preAlpha:
         preCMD = ""
-      
-    # for filtername in etcJPGModule:
-    #     if filepath.find(filtername) != -1:
-    #         work_file_ETC_JPG(filepath)
-    #         return
-      
-    # for filtername in JPGModule:
-    #     if filepath.find(filtername) != -1:
-    #         work_file_Jpg(filepath)
-    #         return
- 
-    for filtername in filters:
-        if filepath.find(filtername) != -1:
-            PassCnt = PassCnt + 1
-            passFiles.append(filename)
-            return
-    
-    with open(filepath, 'rb') as tmpFile:
-        tmpContent = tmpFile.read(3)
-        if tmpContent[0:2] == b'\x1f\x8b':
-            print ("Gzip File, pass.")
-            GzipCnt = GzipCnt + 1
-            return
-        if tmpContent == b"MNG":
-            print ("MNG File, pass.")
-            MngCnt = MngCnt + 1
-            return
-        if tmpContent == b"PKM":
-            print ("PKM File, pass.")
-            PkmCnt = PkmCnt + 1
-            return
             
     os.chdir(tpDir)
     
@@ -99,7 +60,7 @@ def work_file_ETC(filename, isAlphaJPG = False):
     elif filename.find(".jpg") != -1:
         isPng = False
     else:
-        return
+        return 2
 
     if isPng: 
         imgCmd = iosPngCmd           
@@ -107,9 +68,7 @@ def work_file_ETC(filename, isAlphaJPG = False):
         imgCmd = iosJpgCmd 
         
     if imgCmd == "":
-        PassCnt = PassCnt + 1
-        passFiles.append(filename)
-        return
+        return 2
        
     imgCmd = imgCmd % (filepath, filedir) 
     
@@ -204,48 +163,44 @@ def work_file_ETC(filename, isAlphaJPG = False):
               
         if isSuccess:  
             if isUseGzip:
-                GzipCnt = GzipCnt + 1 
                 gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
                 os.system(gzip_cmd)
                 if os.path.exists(tmpfilename.replace(".tmp", ".png")):
                     os.remove(tmpfilename.replace(".tmp", ".png"))
                 os.rename(tmpfilename + ".gz", tmpfilename.replace(".tmp", ".png"))
+                return 3
             else: 
-                MngCnt = MngCnt + 1
                 if os.path.exists(tmpfilename.replace(".tmp", ".png")):
                     os.remove(tmpfilename.replace(".tmp", ".png"))
                 os.rename(tmpfilename, tmpfilename.replace(".tmp", ".png"))
+                return 5
         else:
-            PassCnt = PassCnt + 1
             passFiles.append(filename)
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
+            return 2
             
     else:
         tmpfilename = filepath.replace(".jpg", ".pkm") 
         
         if not os.path.exists(tmpfilename):
             print ("error !!!", filepath, "cannot convert.")
-            PassCnt = PassCnt + 1
-            passFiles.append(filename)
-            return
+            return 2
         
         if isUseGzip:
-            GzipCnt = GzipCnt + 1 
-            
             gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
             os.system(gzip_cmd)
             if os.path.exists(tmpfilename.replace(".pkm", ".jpg")):
                 os.remove(tmpfilename.replace(".pkm", ".jpg"))
             os.rename(tmpfilename + ".gz", tmpfilename.replace(".pkm", ".jpg"))
+            return 3
         else:
-            PkmCnt = PkmCnt + 1
-            
             if os.path.exists(tmpfilename.replace(".pkm", ".jpg")):
                 os.remove(tmpfilename.replace(".pkm", ".jpg"))
             os.rename(tmpfilename, tmpfilename.replace(".pkm", ".jpg"))
+            return 4
  
 
-def convert(filename):
-    ret = work_file_ETC(filename)
+def convert(filename, isAlphaJPG = False):
+    ret = work_file_ETC(filename, isAlphaJPG)
     return ret
