@@ -121,8 +121,9 @@ def work2JPG(filename, isPng = False):
   
     os.chdir(tpDir)
  
-    jpgCMD = """%s -quality 75 %s %s """ % (convertBin, filepath, filepath)                 
-    os.system(jpgCMD)             
+    jpgCMD = """%s -quality 85 %s %s """ % (convertBin, filepath, filepath)                 
+    os.system(jpgCMD)  
+    return           
             
     tmpfilename = os.path.join(filedir, hashlib.md5(name.encode('utf-8')).hexdigest())
         

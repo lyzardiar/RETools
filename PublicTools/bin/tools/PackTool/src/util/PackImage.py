@@ -101,14 +101,15 @@ def work(filename):
         
     ret = 0
     if isIOS:
-        if isDTC4:   
-            ret = PackImg2Mng_PVR.convert(filepath)
-            if ret == 2:
-                ret = PackImgJPG.convert(filepath, isPng)
-        elif isTC4:
-            ret = PackImg2Mng_PVR.convert(filepath, isAlphaJPG, isTC4)
-            if ret == 2:
-                ret = PackImgJPG.convert(filepath, isPng)
+        if isPng:
+            if isDTC4:   
+                ret = PackImg2Mng_PVR.convert(filepath)
+                if ret == 2:
+                    ret = PackImgJPG.convert(filepath, isPng)
+            elif isTC4:
+                ret = PackImg2Mng_PVR.convert(filepath, isAlphaJPG, isTC4)
+                if ret == 2:
+                    ret = PackImgJPG.convert(filepath, isPng)
         else:
             ret = PackImgJPG.convert(filepath, isPng)
     else:
