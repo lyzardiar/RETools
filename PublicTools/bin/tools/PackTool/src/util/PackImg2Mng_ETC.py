@@ -40,7 +40,6 @@ isSaveTransFile = False
 RGBMode = "ETC"
 
 def work_file_ETC(filename, isAlphaJPG = False):
-    global GzipCnt, MngCnt, PkmCnt, PassCnt, filters
     filepath = os.path.realpath(filename)
     filedir = os.path.dirname(filepath)
 
@@ -91,7 +90,7 @@ def work_file_ETC(filename, isAlphaJPG = False):
 
             os.rename(filepath.replace(".png", ".pvr"), filepath.replace(".png", ".pkm"))   
             
-            if not isAlphaJPG:
+            if isAlphaJPG:
                 os.rename(filepath.replace(".png", ".alpha.jpg"), filepath.replace(".png", "_alpha.pkm")) 
             else:
                 os.rename(filepath.replace(".png", ".alpha.pvr"), filepath.replace(".png", "_alpha.pkm")) 
@@ -108,7 +107,8 @@ def work_file_ETC(filename, isAlphaJPG = False):
             os.rename(filepath.replace(".jpg", ".pvr"), filepath.replace(".jpg", ".pkm"))  
         
     except Exception:
-        print ("error !!!", filename, "cannot convert.")
+        t, v, tb = sys.exc_info()
+        print(t, v)
         pass
     finally:
         pass
@@ -154,7 +154,8 @@ def work_file_ETC(filename, isAlphaJPG = False):
                         os.remove(alphaname)
                     
             except Exception:
-                print ("error !!!", filename, "cannot convert.")
+                t, v, tb = sys.exc_info()
+                print(t, v)
                 isSuccess = False
                 pass
             finally: 
@@ -175,7 +176,6 @@ def work_file_ETC(filename, isAlphaJPG = False):
                 os.rename(tmpfilename, tmpfilename.replace(".tmp", ".png"))
                 return 5
         else:
-            passFiles.append(filename)
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
             return 2
