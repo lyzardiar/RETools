@@ -24,47 +24,36 @@ from util import PackXXTea, PackLua, RemoveUtf8Bom, PackImage
 
 threadPool = ThreadPoolExecutor(1)
 
-projectdir = os.path.dirname(os.path.realpath(__file__))
-
-errorFils = []
-
-def _compileLuaJit(tid, absFilePath, relativepath):
-    print("[线程%02d] 编译: %s" % (tid, relativepath))
-    ret = PackLua.compile(absFilePath, relativepath)
-    if ret != 0:
-        errorFils.append(relativepath)
-    return ret == 0
-
-def _XXTeaEncode(tid, absFilePath, relativepath):
-    print("[线程%02d] 加密: %s" % (tid, relativepath))
+projectdir = os.path.dirname(os.path.realpath(__file__))      
     
-    ret = PackXXTea.encode(absFilePath)
-        
-    return ret == 0
- 
-def _convertImage(tid, absFilePath, relativepath):
-    print("[线程%02d] 转换: %s" % (tid, relativepath))
-    
-    ret = PackImage.convert(absFilePath) 
-    return ret == 0
-       
-    
-class PackLuajit(object):
+class PackRes(object):
     '''
     classdocs
     '''
 
-    def __init__(self, fileDir):
+    def __init__(self, fileDir, platform = 'iOS'):
         '''
         Constructor
         '''
         self.isOK = True
+        self.platform = platform
         
         self.dir = fileDir
+            
+        self.taskQueue = Queue()
+ 
+        self.errorFils = []
+        
+        
         if self.dir is None :
             self.isOK = False
             
-        self.taskQueue = Queue()
+        if self.platform == 'iOS':
+            PackLua.updateCMD(False)
+            PackImage.updateCMD(True)
+        else:
+            PackLua.updateCMD(True)
+            PackImage.updateCMD(False)
     
     def start(self):
         if self.isOK:
@@ -79,9 +68,9 @@ class PackLuajit(object):
                 self._FileCat(absFilePath)
         errorQueue = queueProcess(self.taskQueue, os.cpu_count() * 5)
         
-        if len(errorFils) > 0:
+        if len(self.errorFils) > 0:
             print("This files ocurs ERROR:")
-            for file in errorFils:
+            for file in self.errorFils:
                 print('\t' + file)
                 
         print("Compeleted.")
@@ -92,6 +81,7 @@ class PackLuajit(object):
                 print('\t' + passfile)
         os.system('pause')
         return not errorQueue.empty()
+        
  
     '''
         文件分类
@@ -99,25 +89,30 @@ class PackLuajit(object):
     def _FileCat(self, absFilePath):   
         realpath = absFilePath.replace(self.dir, '')
         if absFilePath[-4:] == '.lua' :
-            self.taskQueue.put((_compileLuaJit, absFilePath, realpath))
+            self.taskQueue.put((self._compileLuaJit, absFilePath, realpath))
         elif absFilePath.find(".xml") != -1 :
-            self.taskQueue.put((_XXTeaEncode, absFilePath, realpath))
+            self.taskQueue.put((self._XXTeaEncode, absFilePath, realpath))
         elif absFilePath.find(".png") != -1 :
-            self.taskQueue.put((_convertImage, absFilePath, realpath))
+            self.taskQueue.put((self._convertImage, absFilePath, realpath))
         elif absFilePath.find(".jpg") != -1 :
-            self.taskQueue.put((_convertImage, absFilePath, realpath))
-        
-  
-try:
-    if len(sys.argv) > 1:
-        print("start compile...")
-        jit = PackLuajit(sys.argv[1])
-        jit.start()
-    else:
-        print("use PackLuaJit {dir} to compile...")
+            self.taskQueue.put((self._convertImage, absFilePath, realpath))
 
-except :
-    t, v, tb = sys.exc_info()
-    print(t, v)
-finally:
-    pass
+    def _compileLuaJit(self, tid, absFilePath, relativepath):
+        print("[线程%02d] 编译: %s" % (tid, relativepath))
+        ret = PackLua.compile(absFilePath, relativepath)
+        if ret != 0:
+            self.errorFils.append(relativepath)
+        return ret == 0
+
+    def _XXTeaEncode(self, tid, absFilePath, relativepath):
+        print("[线程%02d] 加密: %s" % (tid, relativepath))
+        
+        ret = PackXXTea.encode(absFilePath)
+            
+        return ret == 0
+    
+    def _convertImage(self, tid, absFilePath, relativepath):
+        print("[线程%02d] 转换: %s" % (tid, relativepath))
+        
+        ret = PackImage.convert(absFilePath) 
+        return ret == 0 

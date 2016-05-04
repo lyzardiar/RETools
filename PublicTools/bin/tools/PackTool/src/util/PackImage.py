@@ -30,23 +30,37 @@ MngCnt = 0
 PkmCnt = 0
 PassCnt = 0
 
-isIOS = True
+isIOS = False
     
 
 passFiles = []
 
-filters = ["crater"]
-   
-if isIOS:
-    TC4Module = [ "/bomb/", "\\bomb\\", "/unit/", "\\unit\\", "/living/", "\\living\\" ]
-    DTC4Module = [ "/show/", "\\show\\", "/effect/", "\\effect\\", "/fight/", "\\fight\\" ]
-    RGB_JPGModule = [  ]
-    JPGModule = [  ]
-else:
-    TC4Module = [  ]
-    RGB_JPGModule = [ "/gj/", "\\gj\\", "/maps/", "\\maps\\" ]
-    JPGModule = [  ]
+filters = ["crater"] 
+
+
+TC4Module = []
+DTC4Module = []
+RGB_JPGModule = []
+JPGModule = []
+
+def updateCMD(_isIOS = True): 
+    global isIOS
+    global TC4Module, DTC4Module, RGB_JPGModule, JPGModule
     
+    isIOS = _isIOS
+    
+    if isIOS:
+        TC4Module = [ "/bomb/", "\\bomb\\", "/unit/", "\\unit\\", "/living/", "\\living\\" ]
+        DTC4Module = [ "/show/", "\\show\\", "/effect/", "\\effect\\", "/fight/", "\\fight\\" ]
+        RGB_JPGModule = [  ]
+        JPGModule = [  ]
+    else:
+        TC4Module = [  ]
+        DTC4Module = [  ]
+        RGB_JPGModule = [ "/gj/", "\\gj\\" ]
+        JPGModule = [  ]
+ 
+updateCMD()   
    
 def work(filename):    
     global GzipCnt, MngCnt, PkmCnt, PassCnt, filters
@@ -101,22 +115,24 @@ def work(filename):
         
     ret = 0
     if isIOS:
-        if isPng:
-            if isDTC4:   
-                ret = PackImg2Mng_PVR.convert(filepath)
-                if ret == 2:
-                    ret = PackImgJPG.convert(filepath, isPng)
-            elif isTC4:
-                ret = PackImg2Mng_PVR.convert(filepath, isAlphaJPG, isTC4)
-                if ret == 2:
-                    ret = PackImgJPG.convert(filepath, isPng)
-        else:
-            ret = PackImgJPG.convert(filepath, isPng)
+        ret = PackImgJPG.convert(filepath, isPng)
+        # if isPng:
+        #     if isDTC4:   
+        #         ret = PackImg2Mng_PVR.convert(filepath)
+        #         if ret == 2:
+        #             ret = PackImgJPG.convert(filepath, isPng)
+        #     elif isTC4:
+        #         ret = PackImg2Mng_PVR.convert(filepath, isAlphaJPG, isTC4)
+        #         if ret == 2:
+        #             ret = PackImgJPG.convert(filepath, isPng)
+        # else:
+        #     ret = PackImgJPG.convert(filepath, isPng)
     else:
         ret = PackImg2Mng_ETC.convert(filepath, isAlphaJPG)    
     
     if ret == 1:
         print("ocurr Error")
+        passFiles.append(filepath)
         
     elif ret == 2:
         PassCnt = PassCnt + 1

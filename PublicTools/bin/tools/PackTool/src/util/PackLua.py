@@ -7,12 +7,19 @@ projectdir = os.path.dirname(os.path.realpath(__file__))
 LuaJitBin = os.path.join(projectdir, "../../../bin/win32/luajit.exe")
 LuaBin = os.path.join(projectdir, "../../../bin/win32/luac.exe")
 
-useJit = False
+useJit = True
 
-if useJit:
-    JitCompileCMD = LuaJitBin + " -b {filename} {filename}" 
-else:
-    JitCompileCMD = LuaBin + " -s -o {filename}c {filename}" 
+def updateCMD(_useJit = True):
+    global useJit
+    
+    useJit = _useJit
+
+    if useJit:
+        JitCompileCMD = LuaJitBin + " -b {filename} {filename}" 
+    else:
+        JitCompileCMD = LuaBin + " -s -o {filename}c {filename}" 
+        
+updateCMD()
 
 errorFils = []
 

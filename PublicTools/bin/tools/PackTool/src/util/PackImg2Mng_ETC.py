@@ -202,5 +202,6 @@ def work_file_ETC(filename, isAlphaJPG = False):
  
 
 def convert(filename, isAlphaJPG = False):
+    print("work_file_ETC")
     ret = work_file_ETC(filename, isAlphaJPG)
     return ret
