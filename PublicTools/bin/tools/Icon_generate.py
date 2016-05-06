@@ -13,7 +13,7 @@ print(fileName)
 fileDir = os.path.dirname(fileName)
 print(fileDir)
     
-imgSize = [29, 40, 50, 57, 58, 72, 76, 80, 87, 100, 114, 120, 144, 152, 180]
+imgSize = [29, 40, 50, 57, 58, 72, 76, 80, 87, 100, 114, 120, 144, 152, 167, 180]
 
 img = Image.open(fileName)
 img = img.convert("RGBA")
