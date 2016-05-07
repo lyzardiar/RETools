@@ -49,10 +49,10 @@ class PackRes(object):
             self.isOK = False
             
         if self.platform == 'iOS':
-            PackLua.updateCMD(False)
+            PackLua.updateCMD(True, True)
             PackImage.updateCMD(True)
         else:
-            PackLua.updateCMD(True)
+            PackLua.updateCMD(True, False)
             PackImage.updateCMD(False)
     
     def start(self):
