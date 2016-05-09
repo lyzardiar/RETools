@@ -62,10 +62,13 @@ class PackRes(object):
             print("路径错误, 请重试...")
     
     def process(self):
-        for r, d, fileList in os.walk(self.dir) :
-            for file in fileList :
-                absFilePath = os.path.join(r, file)
-                self._FileCat(absFilePath)
+        if not os.path.isdir(self.dir):
+            self._FileCat(os.path.realpath(self.dir))
+        else:
+            for r, d, fileList in os.walk(self.dir) :
+                for file in fileList :
+                    absFilePath = os.path.join(r, file)
+                    self._FileCat(absFilePath)
         errorQueue = queueProcess(self.taskQueue, os.cpu_count() * 5)
         
         if len(self.errorFils) > 0:

@@ -7,6 +7,9 @@ projectdir = os.path.dirname(os.path.realpath(__file__))
 LuaJitBin = os.path.join(projectdir, "../../../bin/win32/luajit.exe")
 LuaBin = os.path.join(projectdir, "../../../bin/win32/luac.exe")
 
+LuaJitiOSx86Dir = os.path.join(projectdir, "../../../bin/ios/x86/")
+LuaJitiOSx64Dir = os.path.join(projectdir, "../../../bin/ios/x86_64/")
+
 LuaJitiOSx86Bin = os.path.join(projectdir, "../../../bin/ios/x86/luajit")
 LuaJitiOSx64Bin = os.path.join(projectdir, "../../../bin/ios/x86_64/luajit")
 
@@ -25,6 +28,7 @@ def updateCMD(_useJit = True, _isiOS = True):
         if isiOS:
             JitCompileCMD = LuaJitiOSx86Bin + " -b {filename} {filename}.32" 
             JitCompileCMD2 = LuaJitiOSx64Bin + " -b {filename} {filename}.64" 
+            print(JitCompileCMD)
         else:
             JitCompileCMD = LuaJitBin + " -b {filename} {filename}" 
     else:
@@ -35,39 +39,25 @@ updateCMD()
 errorFils = []
 
 def __compileLuaJitiOS(absFilePath):
-    ret = execCmd(JitCompileCMD.format(filename = absFilePath))
-    ret = ret and execCmd(JitCompileCMD2.format(filename = absFilePath))
+    os.chdir(LuaJitiOSx86Dir)
+    execCmd(JitCompileCMD.format(filename = absFilePath))
+    
+    os.chdir(LuaJitiOSx64Dir)
+    execCmd(JitCompileCMD2.format(filename = absFilePath))
     
     filepath32 = absFilePath+'.32'
     filepath64 = absFilePath+'.64'
-    fileTmp = absFilePath+'.tmp'
     
-    if ret:
-        with open(fileTmp, 'wb') as tmpFile:
-            tmpFile.write(b"LJOS") 
-        
-            statinfo = os.stat(filepath32)
-            fileSize = statinfo.st_size
-            tmpFile.write(pack("i", fileSize))        
-            with open(filepath32, 'rb') as tmp:
-                tmpFile.write(tmp.read())
-        
-            statinfo = os.stat(filepath64)
-            fileSize = statinfo.st_size
-            tmpFile.write(pack("i", fileSize))        
-            with open(filepath64, 'rb') as tmp:
-                tmpFile.write(tmp.read())
-            
-        
+    if os.path.exists(filepath32) and os.path.exists(filepath64):
         if os.path.exists(absFilePath):
             os.remove(absFilePath)
-        os.rename(fileTmp, absFilePath)
+        return 0
     else:
         if os.path.exists(filepath32):
             os.remove(filepath32)
         if os.path.exists(filepath64):
             os.remove(filepath64)
-        return False
+        return 1
 
 def __compileLuac(absFilePath, relativepath = ''):
     if PackXXTea.Is(absFilePath):
@@ -93,7 +83,7 @@ def __compileLuac(absFilePath, relativepath = ''):
     
 def __compileLua(absFilePath, relativepath = ''):
     ret = 0
-    if absFilePath.find('LuaScript') != -1 or absFilePath.find('MEFramework') != -1:
+    if absFilePath.find('LuaScript') != -1 or absFilePath.find('Core') != -1:
         if absFilePath.find('/ui/') == -1 and absFilePath.find('\\ui\\') == -1:
             if absFilePath.find('/Scene/') == -1 and absFilePath.find('\\Scene\\') == -1:
                 ret = PackXXTea.encode(absFilePath)        
