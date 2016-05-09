@@ -2,5 +2,6 @@
 
 CURPATH=`pwd`
 echo "CURPATH:" $CURPATH
+PackPath=$CURPATH/PackResAndroid.py
 
-python3 {$CURPATH}PackResAndroid.py $*
+python3 $PackPath $*
