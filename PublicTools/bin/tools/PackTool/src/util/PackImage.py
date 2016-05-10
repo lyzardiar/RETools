@@ -50,8 +50,8 @@ def updateCMD(_isIOS = True):
     isIOS = _isIOS
     
     if isIOS:
-        TC4Module = [ "/bomb/", "\\bomb\\", "/unit/", "\\unit\\", "/living/", "\\living\\" ]
-        DTC4Module = [ "/show/", "\\show\\", "/effect/", "\\effect\\", "/fight/", "\\fight\\" ]
+        TC4Module = []
+        DTC4Module = [ "/show/", "\\show\\", "/fight/", "\\fight\\" ]
         RGB_JPGModule = [  ]
         JPGModule = [  ]
     else:
@@ -115,18 +115,12 @@ def work(filename):
         
     ret = 0
     if isIOS:
-        ret = PackImgJPG.convert(filepath, isPng)
-        # if isPng:
-        #     if isDTC4:   
-        #         ret = PackImg2Mng_PVR.convert(filepath)
-        #         if ret == 2:
-        #             ret = PackImgJPG.convert(filepath, isPng)
-        #     elif isTC4:
-        #         ret = PackImg2Mng_PVR.convert(filepath, isAlphaJPG, isTC4)
-        #         if ret == 2:
-        #             ret = PackImgJPG.convert(filepath, isPng)
-        # else:
-        #     ret = PackImgJPG.convert(filepath, isPng)
+        if isPng:        
+            ret = PackImg2Mng_PVR.convert(filepath, DTC4Module)
+            if ret == 2:
+                ret = PackImgJPG.convert(filepath, isPng)
+        else:
+            ret = PackImgJPG.convert(filepath, isPng)
     else:
         ret = PackImg2Mng_ETC.convert(filepath, isAlphaJPG)    
     

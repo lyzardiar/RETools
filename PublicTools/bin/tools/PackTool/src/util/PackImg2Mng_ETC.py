@@ -13,6 +13,7 @@ import zipfile
 import time
 import threading
 import struct
+import platform
 from pprint import pprint
 from struct import *
 
@@ -25,14 +26,14 @@ def iter_find_files(path, fnexp):
 projectdir = os.path.dirname(os.path.realpath(__file__)) + '/../../../'
 tpDir = projectdir
 
-tpPath = "etcpack.exe " #os.path.join(projectdir, "etcpack.exe ")
-etcBin = "etcpack.exe " #os.path.join(projectdir, "etcpack.exe ")
-gzipBin = "gzip.exe " #os.path.join(projectdir, "gzip.exe ")  
-convertBin = "convert.exe " #os.path.join(projectdir, "convert.exe ") 
-pvrTexToolBin = "PVRTexToolCLI.exe "
-
-iosPngCmd = """%s %%s %%s -c etc1 -s slow -as """ % (tpPath)
-iosJpgCmd = """%s %%s %%s -c etc1 -s slow  """ % (tpPath)
+if platform.system() == "Windows":
+    gzipBin = "gzip.exe " #os.path.join(projectdir, "gzip.exe ")  
+    convertBin = "convert.exe " #os.path.join(projectdir, "convert.exe ") 
+    pvrTexToolBin = "PVRTexToolCLI.exe "
+else:
+    convertBin = os.path.join(projectdir, "/bin/ios/x86/convert ") 
+    gzipBin = "gzip "
+    pvrTexToolBin = os.path.join(projectdir, "/bin/ios/x86/PVRTexToolCLI ")
 
 isUseGzip = True
 isSaveTransFile = False
@@ -60,16 +61,6 @@ def work_file_ETC(filename, isAlphaJPG = False):
         isPng = False
     else:
         return 2
-
-    if isPng: 
-        imgCmd = iosPngCmd           
-    else:
-        imgCmd = iosJpgCmd 
-        
-    if imgCmd == "":
-        return 2
-       
-    imgCmd = imgCmd % (filepath, filedir) 
     
     rgbCMD = """ %s -f ETC1 %s -q etcslow -i %s -o %s """ % (pvrTexToolBin, preCMD, filepath, filepath.replace(".png", ".pvr"))
     alphaCMD = """%s %s -alpha extract %s """ % (convertBin, filepath, filepath.replace(".png", ".alpha.jpg"))
