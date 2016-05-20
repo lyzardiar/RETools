@@ -20,7 +20,7 @@ import shutil
 from process import queueProcess, execCmd
 from util import Log
 from util import xxtea
-from util import PackXXTea, PackLua, RemoveUtf8Bom, PackImage
+from util import PackXXTea, PackLua, RemoveUtf8Bom, PackImage, PackMap
 
 threadPool = ThreadPoolExecutor(1)
 
@@ -39,6 +39,8 @@ class PackRes(object):
         self.platform = platform
         
         self.dir = fileDir
+        self.file_count = 0
+        self.file_tot_count = 0
             
         self.taskQueue = Queue()
  
@@ -65,6 +67,10 @@ class PackRes(object):
         if not os.path.isdir(self.dir):
             self._FileCat(os.path.realpath(self.dir))
         else:
+            for r, d, fileList in os.walk(self.dir) :
+                for file in fileList :
+                    self.file_tot_count = self.file_tot_count + 1
+                    
             for r, d, fileList in os.walk(self.dir) :
                 for file in fileList :
                     absFilePath = os.path.join(r, file)
@@ -99,12 +105,19 @@ class PackRes(object):
             self.taskQueue.put((self._convertImage, absFilePath, realpath))
         elif absFilePath.find(".jpg") != -1 :
             self.taskQueue.put((self._convertImage, absFilePath, realpath))
+        elif absFilePath.find(".map") != -1 :
+            self.taskQueue.put((self._convertMap, absFilePath, realpath))
+        else:
+            self.file_count = self.file_count + 1
 
     def _compileLuaJit(self, tid, absFilePath, relativepath):
         print("[线程%02d] 编译: %s" % (tid, relativepath))
         ret = PackLua.compile(absFilePath, relativepath)
         if ret != 0:
             self.errorFils.append(relativepath)
+        
+        self.file_count = self.file_count + 1
+        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
         return ret == 0
 
     def _XXTeaEncode(self, tid, absFilePath, relativepath):
@@ -112,10 +125,23 @@ class PackRes(object):
         
         ret = PackXXTea.encode(absFilePath)
             
+        self.file_count = self.file_count + 1
+        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
         return ret == 0
     
     def _convertImage(self, tid, absFilePath, relativepath):
         print("[线程%02d] 转换: %s" % (tid, relativepath))
         
         ret = PackImage.convert(absFilePath) 
+        
+        self.file_count = self.file_count + 1
+        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
+        return ret == 0 
+        
+    def _convertMap(self, tid, absFilePath, relativepath):
+        print("[线程%02d] 转换: %s" % (tid, relativepath))
+        ret = PackMap.convert(absFilePath) 
+        
+        self.file_count = self.file_count + 1
+        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
         return ret == 0 
