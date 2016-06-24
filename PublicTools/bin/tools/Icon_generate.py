@@ -4,7 +4,7 @@ import Image
 curPath = os.path.dirname(os.path.realpath(__file__))
 
 argCount = len(sys.argv)
-fileName = curPath + "/icon.png"
+fileName = curPath + "/icon1.png"
 
 if (argCount > 1):
     fileName = os.path.realpath(sys.argv[1])

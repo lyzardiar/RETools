@@ -17,25 +17,13 @@ import platform
 from pprint import pprint
 from struct import *
 
-from util import PackImgJPG, ImageInfo
+from util.image import PackImgJPG, ImageInfo
+from util import Log, FileHelper 
+from util import toolsPath
 
-def iter_find_files(path, fnexp):
-    for root, dirs, files, in os.walk(path):
-        for filename in fnmatch.filter(files, fnexp):
-            yield os.path.join(root, filename)
-
-            
-projectdir = os.path.dirname(os.path.realpath(__file__)) + '/../../../'
-tpDir = projectdir
-
-if platform.system() == "Windows":
-    gzipBin = "gzip.exe " #os.path.join(projectdir, "gzip.exe ")  
-    convertBin = "convert.exe " #os.path.join(projectdir, "convert.exe ") 
-    pvrTexToolBin = "PVRTexToolCLI.exe "
-else:
-    convertBin = os.path.join(projectdir, "/bin/ios/x86/convert ") 
-    gzipBin = "gzip "
-    pvrTexToolBin = os.path.join(projectdir, "/bin/ios/x86/PVRTexToolCLI ")
+gzipBin = FileHelper.gzipBin
+convertBin = FileHelper.convertBin
+pvrTexToolBin = FileHelper.pvrTexToolBin
 
 isUseGzip = True
 isSaveTransFile = False
@@ -43,12 +31,12 @@ isSaveTransFile = False
 RGBMode = "PVR"
 
 def work_file_PVR(filename, isDTC4Module = False, isTC4 = False):
-    filepath = os.path.realpath(filename)
-    filedir = os.path.dirname(filepath)
+    filepath = FileHelper.realpath(filename)
+    filedir = FileHelper.dirname(filepath)
 
     sys.stdout.flush() 
        
-    os.chdir(tpDir)
+    os.chdir(toolsPath)
     
     isTC4 = True
     isAlphaJPG = False
@@ -80,10 +68,8 @@ def work_file_PVR(filename, isDTC4Module = False, isTC4 = False):
         rgbCMD = """ %s -f PVRTC1_4 %s -q pvrtcbest -i %s -o %s """ % (pvrTexToolBin, preCMD, filepath, filepath.replace(".png", ".pvr"))
     
     try:   
-        if os.path.exists(filepath.replace(".png", ".pkm")):
-            os.remove(filepath.replace(".png", ".pkm"))
-        if os.path.exists(filepath.replace(".png", "_alpha.pkm")):
-            os.remove(filepath.replace(".png", "_alpha.pkm"))
+        FileHelper.remove(filepath.replace(".png", ".pkm"))
+        FileHelper.remove(filepath.replace(".png", "_alpha.pkm"))
     
         os.system(rgbCMD) 
         
@@ -93,7 +79,7 @@ def work_file_PVR(filename, isDTC4Module = False, isTC4 = False):
         if not isAlphaJPG and not isTC4:
             os.system(alphaJPGCMD) 
         
-        if not os.path.exists(filepath.replace(".png", ".pvr")):
+        if not FileHelper.exists(filepath.replace(".png", ".pvr")):
             return 2
             
         os.rename(filepath.replace(".png", ".pvr"), filepath.replace(".png", ".pkm"))   
@@ -104,21 +90,17 @@ def work_file_PVR(filename, isDTC4Module = False, isTC4 = False):
             else:
                 os.rename(filepath.replace(".png", ".alpha.pvr"), filepath.replace(".png", "_alpha.pkm")) 
 
-            if os.path.exists(filepath.replace(".png", ".alpha.jpg")):
-                os.remove(filepath.replace(".png", ".alpha.jpg"))
-            if os.path.exists(filepath.replace(".png", ".alpha.pvr")):
-                os.remove(filepath.replace(".png", ".alpha.pvr"))  
+            FileHelper.remove(filepath.replace(".png", ".alpha.jpg"))
+            FileHelper.remove(filepath.replace(".png", ".alpha.pvr"))  
         
     except Exception:
-        t, v, tb = sys.exc_info()
-        print(t, v)
+        Log.printError()
         return 2
     finally:
         pass
     
     tmpfilename = filepath.replace(".png", ".tmp")
-    if os.path.exists(tmpfilename):
-        os.remove(tmpfilename)
+    FileHelper.remove(tmpfilename)
     
     isSuccess = True
     with open(tmpfilename, 'wb+') as tmpFile:
@@ -151,14 +133,12 @@ def work_file_PVR(filename, isDTC4Module = False, isTC4 = False):
                 # tmpFile.write('P')
             
             if not isSaveTransFile:
-                if os.path.exists(rgbname):
-                    os.remove(rgbname)
-                if os.path.exists(alphaname):
-                    os.remove(alphaname)
+                FileHelper.remove(rgbname)
+                FileHelper.remove(alphaname)
                 
         except Exception:
             t, v, tb = sys.exc_info()
-            print(t, v)
+            Log.printDetailln(t, v)
             isSuccess = False
             pass
         finally: 
@@ -169,14 +149,12 @@ def work_file_PVR(filename, isDTC4Module = False, isTC4 = False):
         if isUseGzip:
             gzip_cmd = gzipBin + tmpfilename + " -n -f -9"
             os.system(gzip_cmd)
-            if os.path.exists(tmpfilename.replace(".tmp", ".png")):
-                os.remove(tmpfilename.replace(".tmp", ".png"))
-            os.rename(tmpfilename + ".gz", tmpfilename.replace(".tmp", ".png"))
+            FileHelper.remove(tmpfilename.replace(".tmp", ".png"))
+            FileHelper.rename(tmpfilename + ".gz", tmpfilename.replace(".tmp", ".png"))
             return 3
         else: 
-            if os.path.exists(tmpfilename.replace(".tmp", ".png")):
-                os.remove(tmpfilename.replace(".tmp", ".png"))
-            os.rename(tmpfilename, tmpfilename.replace(".tmp", ".png"))
+            FileHelper.remove(tmpfilename.replace(".tmp", ".png"))
+            FileHelper.rename(tmpfilename, tmpfilename.replace(".tmp", ".png"))
             return 5
 
 def convert(filename, isDTC4Module = False, isTC4 = False):

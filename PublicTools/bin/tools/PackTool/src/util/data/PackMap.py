@@ -17,8 +17,10 @@ import platform
 from pprint import pprint
 from struct import *
 
-projectdir = os.path.dirname(os.path.realpath(__file__)) + '/../../../'
-tpDir = projectdir
+import util
+from util import Log
+
+tpDir = util.toolsPath
 
 if platform.system() == "Windows":
     gzipBin = "gzip.exe "
@@ -34,13 +36,13 @@ def work_file_GZIP(filename, nameType = 1):
     with open(filepath, 'rb') as tmpFile:
         tmpContent = tmpFile.read(3)
         if tmpContent[0:2] == b'\x1f\x8b':
-            print ("Gzip File, pass.")
+            Log.printDetailln("Gzip File, pass.")
             return 0
  
     os.chdir(tpDir)
     
     if not os.path.exists(filepath):
-        print ("error !!!", filepath, "cannot convert.")
+        Log.printDetailln("error !!!", filepath, "cannot convert.")
         return 2
     
     gzip_cmd = gzipBin + filepath + " -n -f -9"

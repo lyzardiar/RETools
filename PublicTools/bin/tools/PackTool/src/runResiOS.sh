@@ -12,3 +12,5 @@ echo "PackPath:" $PackPath
 #python3 /Volumes/F/Workspace/Tools/RETools/trunk/PublicTools/bin/tools/PackTool/src/PackResiOS.py $*
 
 python3 $PackPath $*
+
+pause

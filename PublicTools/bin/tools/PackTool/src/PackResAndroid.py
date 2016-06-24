@@ -9,9 +9,11 @@ Created on 2016年4月8日
 import sys
 import PackRes
 
-if len(sys.argv) > 1:
-    print("start compile...")
-    pack = PackRes.PackRes(sys.argv[1], 'android')
-    pack.start()
-else:
-    print("use PackRes {dir} to compile...")
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        print("start compile...")
+        pack = PackRes.PackRes(sys.argv[1], 'android')
+
+        pack.start()
+    else:
+        print("use PackRes {dir} to compile...")

@@ -9,23 +9,34 @@ Created on 2016年4月8日
 from concurrent.futures.thread import ThreadPoolExecutor
 from distutils import dir_util
 from functools import cmp_to_key
-from queue import Queue
+
+import multiprocessing
+import queue
 import hashlib
 import sys
 import traceback
 import os
 import re
 import shutil
+import time
 
-from process import queueProcess, execCmd
+from process import queueProcess, queueThread, execCmd
+
 from util import Log
-from util import xxtea
-from util import PackXXTea, PackLua, RemoveUtf8Bom, PackImage, PackMap
+from util.data import xxtea, PackXXTea, PackMap, RemoveUtf8Bom
+from util.lua.PackLua import PackLua
+from util.image.PackImage import PackImage
 
-threadPool = ThreadPoolExecutor(1)
 
-projectdir = os.path.dirname(os.path.realpath(__file__))      
-    
+useThread = False
+
+if useThread:
+    from process.thread.ThreadWork import Task
+    from process.thread.ThreadWork import Work
+else:
+    from process.thread.ProcessWork import Task
+    from process.thread.ProcessWork import Work
+
 class PackRes(object):
     '''
     classdocs
@@ -41,55 +52,63 @@ class PackRes(object):
         self.dir = fileDir
         self.file_count = 0
         self.file_tot_count = 0
-            
-        self.taskQueue = Queue()
- 
-        self.errorFils = []
         
+        self.work = Work(count=os.cpu_count())
+ 
+        self.errorFils = []        
         
         if self.dir is None :
             self.isOK = False
-            
+        
         if self.platform == 'iOS':
-            PackLua.updateCMD(True, True)
-            PackImage.updateCMD(True)
+            self.luaPacker = PackLua(True, True)
+            self.imgPacker = PackImage(True)
         else:
-            PackLua.updateCMD(True, False)
-            PackImage.updateCMD(False)
+            self.luaPacker = PackLua(True, False)
+            self.imgPacker = PackImage(False)
     
     def start(self):
         if self.isOK:
-            threadPool.submit(self.process)
+            self.process()
         else:
-            print("路径错误, 请重试...")
+            Log.printDetailln("路径错误, 请重试...")
     
     def process(self):
+        tstart = time.clock()
+
         if not os.path.isdir(self.dir):
-            self._FileCat(os.path.realpath(self.dir))
+            if self._FileCat(os.path.realpath(self.dir)):
+                self.file_tot_count = self.file_tot_count + 1
         else:
-            for r, d, fileList in os.walk(self.dir) :
-                for file in fileList :
-                    self.file_tot_count = self.file_tot_count + 1
-                    
             for r, d, fileList in os.walk(self.dir) :
                 for file in fileList :
                     absFilePath = os.path.join(r, file)
-                    self._FileCat(absFilePath)
-        errorQueue = queueProcess(self.taskQueue, os.cpu_count() * 5)
+                    if self._FileCat(absFilePath):
+                        self.file_tot_count = self.file_tot_count + 1
+
+        Log.printDetailln("%d Files loaded Completed, Compiling..." % (self.file_tot_count))         
         
-        if len(self.errorFils) > 0:
-            print("This files ocurs ERROR:")
-            for file in self.errorFils:
-                print('\t' + file)
-                
-        print("Compeleted.")
+        self.work.start(self.file_tot_count)
+        self.work.join()
         
-        if len(PackImage.passFiles) > 0 :
-            print("Pass Files:")
-            for passfile in PackImage.passFiles:
-                print('\t' + passfile)
-        os.system('pause')
-        return not errorQueue.empty()
+        tend = time.clock()
+
+        errs = self.work.errs
+        if errs.size() > 0:
+            Log.printDetailln("This files ocurs ERROR:")
+            while errs.size() > 0:
+                task = errs.get()
+                absFilePath, realpath, *args = task.param
+                Log.printDetailln('\t', realpath)
+
+        Log.printDetailln("\n\nCompeleted in %.3fs." % (tend - tstart))
+        
+        if len(self.imgPacker.passFiles) > 0 :
+            Log.printDetailln("Pass Files:")
+            for passfile in self.imgPacker.passFiles:
+                Log.printDetailln('\t' + passfile)
+
+        return True
         
  
     '''
@@ -97,51 +116,47 @@ class PackRes(object):
     '''
     def _FileCat(self, absFilePath):   
         realpath = absFilePath.replace(self.dir, '')
+        
+        ret = True
+
         if absFilePath[-4:] == '.lua' :
-            self.taskQueue.put((self._compileLuaJit, absFilePath, realpath))
+            self.work.putTask(Task(target=task_compileLuaJit2, args=(absFilePath, realpath, self.luaPacker, self.file_tot_count + 1)))
         elif absFilePath.find(".xml") != -1 :
-            self.taskQueue.put((self._XXTeaEncode, absFilePath, realpath))
+            self.work.putTask(Task(target=task_XXTeaEncode2, args=(absFilePath, realpath, self.file_tot_count + 1)))
         elif absFilePath.find(".png") != -1 :
-            self.taskQueue.put((self._convertImage, absFilePath, realpath))
+            self.work.putTask(Task(target=task_convertImage2, args=(absFilePath, realpath, self.imgPacker, self.file_tot_count + 1)))
         elif absFilePath.find(".jpg") != -1 :
-            self.taskQueue.put((self._convertImage, absFilePath, realpath))
+            self.work.putTask(Task(target=task_convertImage2, args=(absFilePath, realpath, self.imgPacker, self.file_tot_count + 1)))
         elif absFilePath.find(".map") != -1 :
-            self.taskQueue.put((self._convertMap, absFilePath, realpath))
+            self.work.putTask(Task(target=task_convertMap2, args=(absFilePath, realpath, self.file_tot_count + 1)))
         else:
-            self.file_count = self.file_count + 1
-
-    def _compileLuaJit(self, tid, absFilePath, relativepath):
-        print("[线程%02d] 编译: %s" % (tid, relativepath))
-        ret = PackLua.compile(absFilePath, relativepath)
-        if ret != 0:
-            self.errorFils.append(relativepath)
-        
-        self.file_count = self.file_count + 1
-        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
-        return ret == 0
-
-    def _XXTeaEncode(self, tid, absFilePath, relativepath):
-        print("[线程%02d] 加密: %s" % (tid, relativepath))
-        
-        ret = PackXXTea.encode(absFilePath)
-            
-        self.file_count = self.file_count + 1
-        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
-        return ret == 0
+            ret = False
+        return ret
     
-    def _convertImage(self, tid, absFilePath, relativepath):
-        print("[线程%02d] 转换: %s" % (tid, relativepath))
-        
-        ret = PackImage.convert(absFilePath) 
-        
-        self.file_count = self.file_count + 1
-        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
-        return ret == 0 
-        
-    def _convertMap(self, tid, absFilePath, relativepath):
-        print("[线程%02d] 转换: %s" % (tid, relativepath))
-        ret = PackMap.convert(absFilePath) 
-        
-        self.file_count = self.file_count + 1
-        print("已处理：%d/%d" % (self.file_count, self.file_tot_count))
-        return ret == 0 
+def task_compileLuaJit2(tid, taskTotSize, absFilePath, relativepath, luaPacker, taskSize):
+    ret = luaPacker.compile(absFilePath, relativepath)
+
+    Log.printDetailln("编译[%d/%d]: %s" % (taskSize, taskTotSize, relativepath))
+
+    return ret == 0
+
+def task_XXTeaEncode2(tid, taskTotSize, absFilePath, relativepath, taskSize):   
+    ret = PackXXTea.encode(absFilePath)
+    
+    Log.printDetailln("加密[%d/%d]: %s" % (taskSize, taskTotSize, relativepath)) 
+
+    return ret == 0
+
+def task_convertImage2(tid, taskTotSize, absFilePath, relativepath, imgPacker, taskSize):   
+    ret = imgPacker.convert(absFilePath) 
+    
+    Log.printDetailln("转换[%d/%d]: %s" % (taskSize, taskTotSize, relativepath)) 
+
+    return ret == 0 
+    
+def task_convertMap2(tid, taskTotSize, absFilePath, relativepath, taskSize):
+    ret = PackMap.convert(absFilePath) 
+    
+    Log.printDetailln("转换[%d/%d]: %s" % (taskSize, taskTotSize, relativepath))
+
+    return ret == 0 
