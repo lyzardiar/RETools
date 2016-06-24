@@ -30,7 +30,7 @@ isSaveTransFile = False
 
 RGBMode = "ETC"
 
-def work_file_ETC(filename, isAlphaJPG = False, isFast = True):
+def work_file_ETC(filename, isAlphaJPG = False, isFast = False):
     filepath = FileHelper.realpath(filename)
     filedir = FileHelper.dirname(filepath)
 

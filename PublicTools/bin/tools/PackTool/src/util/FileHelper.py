@@ -2,16 +2,16 @@ import os
 import sys
 import struct
 import platform
-
+from util import toolsPath
 
 if platform.system() == "Windows":
     gzipBin = "gzip.exe " 
     convertBin = "convert.exe " 
     pvrTexToolBin = "PVRTexToolCLI.exe "
 else:
-    convertBin = FileHelper.join(projectdir, "/bin/ios/x86/convert ") 
+    convertBin = os.path.join(toolsPath, "bin/ios/x86/convert ") 
     gzipBin = "gzip "
-    pvrTexToolBin = FileHelper.join(projectdir, "/bin/ios/x86/PVRTexToolCLI ")
+    pvrTexToolBin = os.path.join(toolsPath, "bin/ios/x86/PVRTexToolCLI ")
 
 
 # iterator dir
