@@ -94,9 +94,9 @@ class PackRes(object):
         tend = time.clock()
 
         errs = self.work.errs
-        if errs.size() > 0:
+        if not errs.empty():
             Log.printDetailln("This files ocurs ERROR:")
-            while errs.size() > 0:
+            while not errs.empty():
                 task = errs.get()
                 absFilePath, realpath, *args = task.param
                 Log.printDetailln('\t', realpath)

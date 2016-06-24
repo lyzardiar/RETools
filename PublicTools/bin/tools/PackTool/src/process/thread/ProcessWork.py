@@ -47,9 +47,6 @@ class TaskQueue():
     
     def empty(self):
         return self.list.empty()
-    
-    def size(self):
-        return self.list.qsize()
 
     def print(self):
         if self.empty():

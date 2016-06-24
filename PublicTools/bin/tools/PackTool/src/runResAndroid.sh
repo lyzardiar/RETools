@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CURPATH=`pwd`
+CURPATH=$(cd `dirname $0`; pwd)
 echo "CURPATH:" $CURPATH
 PackPath=$CURPATH/PackResAndroid.py
 
